@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Contact {
+  id          String   @id @default(cuid())
+  name        String
+  category    String   // Agent, Casting, Regisseur, Kollege, etc.
+  email       String?
+  phone       String?
+  company     String?
+  notes       String?
+  lastContact DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  applications Application[]
+}
+
+model Application {
+  id          String   @id @default(cuid())
+  role        String
+  production  String
+  status      String   @default("Beworben") // Beworben, Eingeladen, Callback, Angenommen, Abgesagt
+  applyDate   DateTime @default(now())
+  notes       String?
+  material    String?  // Welches Material wurde verlangt
+  followUpAt  DateTime?
+  contactId   String?
+  contact     Contact? @relation(fields: [contactId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  role        String?
+  status      String   @default("Laufend") // Laufend, Abgeschlossen, Geplant
+  startDate   DateTime?
+  endDate     DateTime?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
