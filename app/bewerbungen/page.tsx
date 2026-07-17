@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import BewerbungForm from "./BewerbungForm";
+import BewerbungKarte from "./BewerbungKarte";
 
 export default async function BewerbungenPage() {
   const bewerbungen = await prisma.application.findMany({
@@ -17,16 +18,14 @@ export default async function BewerbungenPage() {
           <p className="text-neutral-500">Noch keine Bewerbungen eingetragen.</p>
         ) : (
           bewerbungen.map((b) => (
-            <div key={b.id} className="bg-white rounded-lg p-4 shadow-sm border border-neutral-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="font-semibold">{b.role}</h2>
-                  <p className="text-sm text-neutral-500">{b.production}</p>
-                </div>
-                <span className="text-xs bg-neutral-100 px-3 py-1 rounded-full">{b.status}</span>
-              </div>
-              {b.notes && <p className="text-sm text-neutral-600 mt-2">{b.notes}</p>}
-            </div>
+            <BewerbungKarte
+              key={b.id}
+              id={b.id}
+              role={b.role}
+              production={b.production}
+              status={b.status}
+              notes={b.notes}
+            />
           ))
         )}
       </div>
