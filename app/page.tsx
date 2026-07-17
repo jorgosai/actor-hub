@@ -1,6 +1,14 @@
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 
+const STATUS_FARBEN: Record<string, string> = {
+  Beworben: "bg-blue-100 text-blue-800",
+  Eingeladen: "bg-yellow-100 text-yellow-800",
+  Callback: "bg-purple-100 text-purple-800",
+  Angenommen: "bg-green-100 text-green-800",
+  Abgesagt: "bg-red-100 text-red-800",
+};
+
 export default async function Home() {
   const [bewerbungen, kontakte, projekte] = await Promise.all([
     prisma.application.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
@@ -43,7 +51,9 @@ export default async function Home() {
                 <p className="font-medium">{b.role}</p>
                 <p className="text-sm text-neutral-500">{b.production}</p>
               </div>
-              <span className="text-xs bg-neutral-100 px-3 py-1 rounded-full">{b.status}</span>
+              <span className={`text-xs px-3 py-1 rounded-full font-medium ${STATUS_FARBEN[b.status] ?? "bg-neutral-100"}`}>
+                {b.status}
+              </span>
             </div>
           ))
         )}
