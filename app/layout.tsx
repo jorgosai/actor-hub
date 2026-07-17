@@ -32,6 +32,9 @@ export default function RootLayout({
           <Link href="/projekte" className="px-3 py-2 rounded hover:bg-neutral-700 transition">
             Projekte
           </Link>
+          <Link href="/assistent" className="px-3 py-2 rounded hover:bg-neutral-700 transition">
+            KI-Assistent
+          </Link>
         </aside>
         <main className="flex-1 p-8 bg-neutral-50 overflow-y-auto">
           {children}
