@@ -9,6 +9,7 @@ export async function POST(request: Request) {
       role: data.role,
       production: data.production,
       notes: data.notes,
+      contactId: data.contactId ?? null,
     },
   });
 

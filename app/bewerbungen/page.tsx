@@ -3,16 +3,20 @@ import BewerbungForm from "./BewerbungForm";
 import BewerbungKarte from "./BewerbungKarte";
 
 export default async function BewerbungenPage() {
-  const bewerbungen = await prisma.application.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  const [bewerbungen, kontakte] = await Promise.all([
+    prisma.application.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { contact: true },
+    }),
+    prisma.contact.findMany({ orderBy: { name: "asc" } }),
+  ]);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold">Bewerbungen</h1>
       </div>
-      <BewerbungForm />
+      <BewerbungForm kontakte={kontakte} />
       <div className="mt-8 space-y-4">
         {bewerbungen.length === 0 ? (
           <p className="text-neutral-500">Noch keine Bewerbungen eingetragen.</p>
@@ -25,6 +29,9 @@ export default async function BewerbungenPage() {
               production={b.production}
               status={b.status}
               notes={b.notes}
+              contactName={b.contact?.name}
+              contactId={b.contactId}
+              kontakte={kontakte}
             />
           ))
         )}
