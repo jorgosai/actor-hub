@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { getUserId } from "@/lib/session";
 import Link from "next/link";
 
 const STATUS_FARBEN: Record<string, { bg: string; text: string; dot: string }> = {
@@ -16,23 +17,27 @@ function formatDate(d: Date): string {
 }
 
 export default async function Home() {
+  const userId = await getUserId();
   const [bewerbungen, kontakteCount, projekte, aufgaben, pflegeKontakte, termine] = await Promise.all([
     prisma.application.findMany({
+      where: { userId },
       orderBy: { createdAt: "desc" },
       include: { contact: true },
     }),
-    prisma.contact.count(),
-    prisma.project.findMany({ where: { status: "Laufend" } }),
+    prisma.contact.count({ where: { userId } }),
+    prisma.project.findMany({ where: { userId, status: "Laufend" } }),
     prisma.task.findMany({
-      where: { done: false },
+      where: { userId, done: false },
       orderBy: { dueDate: { sort: "asc", nulls: "last" } },
     }),
     prisma.contact.findMany({
+      where: { userId },
       orderBy: { lastContact: { sort: "asc", nulls: "first" } },
       take: 3,
     }),
     prisma.event.findMany({
       where: {
+        userId,
         date: {
           gte: new Date(new Date().setHours(0, 0, 0, 0)),
           lt: new Date(new Date().setHours(0, 0, 0, 0) + 2 * 86400000),

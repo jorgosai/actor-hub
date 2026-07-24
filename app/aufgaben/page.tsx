@@ -1,19 +1,22 @@
 import { prisma } from "@/lib/db";
+import { getUserId } from "@/lib/session";
 import AufgabeForm from "./AufgabeForm";
 import AufgabeItem from "./AufgabeItem";
 
 export default async function AufgabenPage() {
+  const userId = await getUserId();
   const [aufgaben, castings, projekte] = await Promise.all([
     prisma.task.findMany({
+      where: { userId },
       orderBy: [{ done: "asc" }, { dueDate: { sort: "asc", nulls: "last" } }, { createdAt: "desc" }],
       include: { application: true, project: true },
     }),
     prisma.application.findMany({
-      where: { status: { notIn: ["Gebucht", "Abgesagt"] } },
+      where: { userId, status: { notIn: ["Gebucht", "Abgesagt"] } },
       orderBy: { createdAt: "desc" },
     }),
     prisma.project.findMany({
-      where: { status: "Laufend" },
+      where: { userId, status: "Laufend" },
       orderBy: { createdAt: "desc" },
     }),
   ]);

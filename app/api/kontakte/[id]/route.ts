@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
+import { getUserId } from "@/lib/session";
 import { NextResponse } from "next/server";
 
 export async function PATCH(
@@ -8,19 +9,20 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const userId = await getUserId();
   const data = await request.json();
 
   // Schnellaktion: nur lastContact aktualisieren
   if (data.touchLastContact) {
-    const kontakt = await prisma.contact.update({
-      where: { id },
+    await prisma.contact.updateMany({
+      where: { id, userId },
       data: { lastContact: new Date() },
     });
-    return NextResponse.json(kontakt);
+    return NextResponse.json({ ok: true });
   }
 
-  const kontakt = await prisma.contact.update({
-    where: { id },
+  await prisma.contact.updateMany({
+    where: { id, userId },
     data: {
       name: data.name,
       category: data.category,
@@ -33,7 +35,7 @@ export async function PATCH(
       }),
     },
   });
-  return NextResponse.json(kontakt);
+  return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(
@@ -41,6 +43,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  await prisma.contact.delete({ where: { id } });
+  const userId = await getUserId();
+  await prisma.contact.deleteMany({ where: { id, userId } });
   return NextResponse.json({ ok: true });
 }

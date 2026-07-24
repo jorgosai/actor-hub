@@ -1,29 +1,31 @@
 import { prisma } from "@/lib/db";
+import { getUserId } from "@/lib/session";
 import TerminForm from "./TerminForm";
 import TerminItem from "./TerminItem";
 
 export default async function KalenderPage() {
+  const userId = await getUserId();
   const heute = new Date();
   heute.setHours(0, 0, 0, 0);
 
   const [termine, vergangene, castings, projekte] = await Promise.all([
     prisma.event.findMany({
-      where: { date: { gte: heute } },
+      where: { userId, date: { gte: heute } },
       orderBy: { date: "asc" },
       include: { application: true, project: true },
     }),
     prisma.event.findMany({
-      where: { date: { lt: heute } },
+      where: { userId, date: { lt: heute } },
       orderBy: { date: "desc" },
       take: 5,
       include: { application: true, project: true },
     }),
     prisma.application.findMany({
-      where: { status: { notIn: ["Gebucht", "Abgesagt"] } },
+      where: { userId, status: { notIn: ["Gebucht", "Abgesagt"] } },
       orderBy: { createdAt: "desc" },
     }),
     prisma.project.findMany({
-      where: { status: { not: "Abgeschlossen" } },
+      where: { userId, status: { not: "Abgeschlossen" } },
       orderBy: { createdAt: "desc" },
     }),
   ]);

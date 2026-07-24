@@ -3,21 +3,23 @@ export const dynamic = "force-dynamic";
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getUserId } from "@/lib/session";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
 export async function POST(request: Request) {
+  const userId = await getUserId();
   const { prompt, typ } = await request.json();
 
   const [bewerbungen, kontakte, aufgaben, termine, ziele, wuensche] = await Promise.all([
-    prisma.application.findMany({ orderBy: { createdAt: "desc" }, take: 20 }),
-    prisma.contact.findMany({ orderBy: { createdAt: "desc" }, take: 20 }),
-    prisma.task.findMany({ where: { done: false }, orderBy: { dueDate: { sort: "asc", nulls: "last" } }, take: 20 }),
-    prisma.event.findMany({ where: { date: { gte: new Date() } }, orderBy: { date: "asc" }, take: 10 }),
-    prisma.goal.findMany({ where: { done: false }, take: 10 }),
-    prisma.wish.findMany({ where: { achieved: false }, take: 15 }),
+    prisma.application.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 20 }),
+    prisma.contact.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 20 }),
+    prisma.task.findMany({ where: { userId, done: false }, orderBy: { dueDate: { sort: "asc", nulls: "last" } }, take: 20 }),
+    prisma.event.findMany({ where: { userId, date: { gte: new Date() } }, orderBy: { date: "asc" }, take: 10 }),
+    prisma.goal.findMany({ where: { userId, done: false }, take: 10 }),
+    prisma.wish.findMany({ where: { userId, achieved: false }, take: 15 }),
   ]);
 
   const kontext = `

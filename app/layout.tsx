@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
+import { auth, signOut } from "@/auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,11 +26,20 @@ const navItems = [
   { href: "/assistent", label: "KI-Assistent", icon: "✦" },
 ];
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+  const name = session?.user?.name ?? "Actor Hub";
+  const initialen = name
+    .split(" ")
+    .map((t) => t[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <html lang="de" className={`${geistSans.variable} h-full`}>
       <body className="h-full flex bg-background">
@@ -41,7 +51,7 @@ export default function RootLayout({
               Actor Hub
             </div>
             <div className="text-xl font-light text-sidebar-foreground tracking-tight">
-              Jorgos Stathis
+              {name}
             </div>
           </div>
 
@@ -66,12 +76,28 @@ export default function RootLayout({
           <div className="px-5 py-5 border-t border-sidebar-border">
             <div className="flex items-center gap-3">
               <div className="w-7 h-7 rounded-full bg-primary/80 flex items-center justify-center text-xs font-semibold text-primary-foreground flex-shrink-0">
-                JS
+                {initialen}
               </div>
-              <div>
-                <div className="text-xs font-medium text-sidebar-foreground">Jorgos Stathis</div>
-                <div className="text-[10px] text-sidebar-foreground/40">Schauspieler</div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-medium text-sidebar-foreground truncate">{name}</div>
+                <div className="text-[10px] text-sidebar-foreground/40">Schauspieler:in</div>
               </div>
+              {session && (
+                <form
+                  action={async () => {
+                    "use server";
+                    await signOut({ redirectTo: "/login" });
+                  }}
+                >
+                  <button
+                    type="submit"
+                    className="text-sidebar-foreground/40 hover:text-sidebar-foreground text-xs transition"
+                    title="Abmelden"
+                  >
+                    ⎋
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         </aside>

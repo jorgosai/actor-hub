@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
+import { getUserId } from "@/lib/session";
 import { NextResponse } from "next/server";
 
 export async function PATCH(
@@ -8,11 +9,12 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const userId = await getUserId();
   const data = await request.json();
 
   if (data.art === "wish") {
-    const wish = await prisma.wish.update({
-      where: { id },
+    await prisma.wish.updateMany({
+      where: { id, userId },
       data: {
         ...(data.title !== undefined && { title: data.title }),
         ...(data.type !== undefined && { type: data.type }),
@@ -20,11 +22,11 @@ export async function PATCH(
         ...(data.notes !== undefined && { notes: data.notes || null }),
       },
     });
-    return NextResponse.json(wish);
+    return NextResponse.json({ ok: true });
   }
 
-  const goal = await prisma.goal.update({
-    where: { id },
+  await prisma.goal.updateMany({
+    where: { id, userId },
     data: {
       ...(data.title !== undefined && { title: data.title }),
       ...(data.horizon !== undefined && { horizon: data.horizon }),
@@ -33,7 +35,7 @@ export async function PATCH(
       ...(data.notes !== undefined && { notes: data.notes || null }),
     },
   });
-  return NextResponse.json(goal);
+  return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(
@@ -41,11 +43,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const userId = await getUserId();
   const { searchParams } = new URL(request.url);
   if (searchParams.get("art") === "wish") {
-    await prisma.wish.delete({ where: { id } });
+    await prisma.wish.deleteMany({ where: { id, userId } });
   } else {
-    await prisma.goal.delete({ where: { id } });
+    await prisma.goal.deleteMany({ where: { id, userId } });
   }
   return NextResponse.json({ ok: true });
 }

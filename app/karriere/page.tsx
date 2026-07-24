@@ -1,10 +1,12 @@
 import { prisma } from "@/lib/db";
+import { getUserId } from "@/lib/session";
 import KarriereClient from "./KarriereClient";
 
 export default async function KarrierePage() {
+  const userId = await getUserId();
   const [ziele, wuensche] = await Promise.all([
-    prisma.goal.findMany({ orderBy: [{ done: "asc" }, { createdAt: "desc" }] }),
-    prisma.wish.findMany({ orderBy: [{ achieved: "asc" }, { createdAt: "desc" }] }),
+    prisma.goal.findMany({ where: { userId }, orderBy: [{ done: "asc" }, { createdAt: "desc" }] }),
+    prisma.wish.findMany({ where: { userId }, orderBy: [{ achieved: "asc" }, { createdAt: "desc" }] }),
   ]);
 
   const erreicht = ziele.filter((z) => z.done).length;

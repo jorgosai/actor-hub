@@ -7,6 +7,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+
+  contacts     Contact[]
+  applications Application[]
+  projects     Project[]
+  tasks        Task[]
+  events       Event[]
+  materials    Material[]
+  goals        Goal[]
+  wishes       Wish[]
+}
+
 model Contact {
   id          String   @id @default(cuid())
   name        String
@@ -20,6 +37,8 @@ model Contact {
   updatedAt   DateTime @updatedAt
 
   applications Application[]
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model Application {
@@ -38,6 +57,8 @@ model Application {
   updatedAt   DateTime @updatedAt
   tasks       Task[]
   events      Event[]
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model Goal {
@@ -49,6 +70,8 @@ model Goal {
   notes      String?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model Wish {
@@ -59,6 +82,8 @@ model Wish {
   notes     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model Material {
@@ -71,6 +96,8 @@ model Material {
   notes     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model Event {
@@ -87,6 +114,8 @@ model Event {
   project       Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model Task {
@@ -101,6 +130,8 @@ model Task {
   project       Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model Project {
@@ -115,4 +146,6 @@ model Project {
   updatedAt   DateTime @updatedAt
   tasks       Task[]
   events      Event[]
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
 }

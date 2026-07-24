@@ -1,16 +1,19 @@
 import { prisma } from "@/lib/db";
+import { getUserId } from "@/lib/session";
 import BewerbungForm from "./BewerbungForm";
 import BewerbungKarte from "./BewerbungKarte";
 
 const PIPELINE = ["Anfrage", "Beworben", "Self Tape", "Recall", "Callback", "Gebucht"];
 
 export default async function BewerbungenPage() {
+  const userId = await getUserId();
   const [bewerbungen, kontakte] = await Promise.all([
     prisma.application.findMany({
+      where: { userId },
       orderBy: { createdAt: "desc" },
       include: { contact: true },
     }),
-    prisma.contact.findMany({ orderBy: { name: "asc" } }),
+    prisma.contact.findMany({ where: { userId }, orderBy: { name: "asc" } }),
   ]);
 
   const counts = PIPELINE.map((stufe) => ({

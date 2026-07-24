@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { getUserId } from "@/lib/session";
 import MaterialForm from "./MaterialForm";
 import MaterialItem from "./MaterialItem";
 
@@ -13,7 +14,9 @@ const ALTERS_GRENZEN: Record<string, number> = {
 };
 
 export default async function MaterialPage() {
+  const userId = await getUserId();
   const material = await prisma.material.findMany({
+    where: { userId },
     orderBy: [{ current: "desc" }, { createdAt: "desc" }],
   });
 

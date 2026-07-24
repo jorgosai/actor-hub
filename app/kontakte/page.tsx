@@ -1,11 +1,14 @@
 import { prisma } from "@/lib/db";
+import { getUserId } from "@/lib/session";
 import KontaktForm from "./KontaktForm";
 import KontaktKarte from "./KontaktKarte";
 
 const PFLEGE_TAGE = 90;
 
 export default async function KontaktePage() {
+  const userId = await getUserId();
   const kontakte = await prisma.contact.findMany({
+    where: { userId },
     orderBy: { name: "asc" },
   });
 

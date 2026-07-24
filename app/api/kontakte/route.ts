@@ -1,13 +1,16 @@
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
+import { getUserId } from "@/lib/session";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
+  const userId = await getUserId();
   const data = await request.json();
 
   const kontakt = await prisma.contact.create({
     data: {
+      userId,
       name: data.name,
       category: data.category,
       email: data.email,

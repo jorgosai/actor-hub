@@ -1,9 +1,12 @@
 import { prisma } from "@/lib/db";
+import { getUserId } from "@/lib/session";
 import ProjektForm from "./ProjektForm";
 import ProjektKarte from "./ProjektKarte";
 
 export default async function ProjektePage() {
+  const userId = await getUserId();
   const projekte = await prisma.project.findMany({
+    where: { userId },
     orderBy: { createdAt: "desc" },
   });
 

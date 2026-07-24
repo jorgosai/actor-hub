@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
+import { getUserId } from "@/lib/session";
 import { NextResponse } from "next/server";
 
 export async function PATCH(
@@ -8,21 +9,22 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const userId = await getUserId();
   const data = await request.json();
 
   // Als aktuelle Version markieren: andere desselben Typs zurücksetzen
   if (data.current === true) {
-    const existing = await prisma.material.findUnique({ where: { id } });
+    const existing = await prisma.material.findFirst({ where: { id, userId } });
     if (existing) {
       await prisma.material.updateMany({
-        where: { type: existing.type, current: true, id: { not: id } },
+        where: { userId, type: existing.type, current: true, id: { not: id } },
         data: { current: false },
       });
     }
   }
 
-  const material = await prisma.material.update({
-    where: { id },
+  await prisma.material.updateMany({
+    where: { id, userId },
     data: {
       ...(data.name !== undefined && { name: data.name }),
       ...(data.type !== undefined && { type: data.type }),
@@ -33,7 +35,7 @@ export async function PATCH(
     },
   });
 
-  return NextResponse.json(material);
+  return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(
@@ -41,6 +43,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  await prisma.material.delete({ where: { id } });
+  const userId = await getUserId();
+  await prisma.material.deleteMany({ where: { id, userId } });
   return NextResponse.json({ ok: true });
 }

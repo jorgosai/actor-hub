@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
+import { getUserId } from "@/lib/session";
 import { NextResponse } from "next/server";
 
 export async function PATCH(
@@ -8,10 +9,11 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const userId = await getUserId();
   const data = await request.json();
 
-  const termin = await prisma.event.update({
-    where: { id },
+  await prisma.event.updateMany({
+    where: { id, userId },
     data: {
       ...(data.title !== undefined && { title: data.title }),
       ...(data.type !== undefined && { type: data.type }),
@@ -24,7 +26,7 @@ export async function PATCH(
     },
   });
 
-  return NextResponse.json(termin);
+  return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(
@@ -32,6 +34,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  await prisma.event.delete({ where: { id } });
+  const userId = await getUserId();
+  await prisma.event.deleteMany({ where: { id, userId } });
   return NextResponse.json({ ok: true });
 }
