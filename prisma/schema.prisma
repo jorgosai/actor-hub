@@ -40,6 +40,18 @@ model Application {
   events      Event[]
 }
 
+model Material {
+  id        String   @id @default(cuid())
+  name      String
+  type      String   @default("Sonstiges") // Showreel, Headshot, Vita, Voice Demo, Self Tape, Presse, Sonstiges
+  url       String?
+  version   String?  // z.B. "2026", "V2"
+  current   Boolean  @default(true) // aktuelle Version?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Event {
   id            String    @id @default(cuid())
   title         String
