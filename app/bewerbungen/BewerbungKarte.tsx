@@ -3,13 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const STATUS_OPTIONEN = ["Beworben", "Eingeladen", "Callback", "Angenommen", "Abgesagt"];
+const STATUS_OPTIONEN = ["Anfrage", "Beworben", "Self Tape", "Recall", "Callback", "Gebucht", "Abgesagt"];
 
 const STATUS_FARBEN: Record<string, string> = {
+  Anfrage: "bg-neutral-100 text-neutral-700",
   Beworben: "bg-blue-100 text-blue-800",
-  Eingeladen: "bg-yellow-100 text-yellow-800",
+  "Self Tape": "bg-amber-100 text-amber-800",
+  Recall: "bg-teal-100 text-teal-800",
   Callback: "bg-purple-100 text-purple-800",
-  Angenommen: "bg-green-100 text-green-800",
+  Gebucht: "bg-green-100 text-green-800",
   Abgesagt: "bg-red-100 text-red-800",
 };
 
@@ -21,16 +23,39 @@ type Props = {
   production: string;
   status: string;
   notes: string | null;
+  followUpAt: Date | null;
+  deadline: Date | null;
   contactName?: string | null;
   contactId?: string | null;
   kontakte: Kontakt[];
 };
 
-export default function BewerbungKarte({ id, role, production, status, notes, contactName, contactId, kontakte }: Props) {
+function toInputDate(d: Date | null): string {
+  return d ? new Date(d).toISOString().split("T")[0] : "";
+}
+
+function formatDate(d: Date): string {
+  return new Date(d).toLocaleDateString("de-DE", { day: "numeric", month: "short" });
+}
+
+export default function BewerbungKarte({ id, role, production, status, notes, followUpAt, deadline, contactName, contactId, kontakte }: Props) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ role, production, notes: notes ?? "", contactId: contactId ?? "" });
+  const [form, setForm] = useState({
+    role,
+    production,
+    notes: notes ?? "",
+    contactId: contactId ?? "",
+    followUpAt: toInputDate(followUpAt),
+    deadline: toInputDate(deadline),
+  });
+
+  const heute = new Date();
+  heute.setHours(0, 0, 0, 0);
+  const aktiv = status !== "Gebucht" && status !== "Abgesagt";
+  const followUpFaellig = aktiv && followUpAt && new Date(followUpAt) <= heute;
+  const deadlineNah = aktiv && deadline && (new Date(deadline).getTime() - heute.getTime()) / 86400000 <= 3;
 
   async function handleStatusChange(neuerStatus: string) {
     await fetch(`/api/bewerbungen/${id}`, {
@@ -70,6 +95,14 @@ export default function BewerbungKarte({ id, role, production, status, notes, co
           <div>
             <label className="block text-xs font-medium mb-1">Produktion</label>
             <input value={form.production} onChange={(e) => setForm({ ...form, production: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1">Deadline (z.B. Self Tape Abgabe)</label>
+            <input type="date" value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1">Follow-up am</label>
+            <input type="date" value={form.followUpAt} onChange={(e) => setForm({ ...form, followUpAt: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
           </div>
           <div className="col-span-2">
             <label className="block text-xs font-medium mb-1">Kontakt</label>
@@ -117,6 +150,22 @@ export default function BewerbungKarte({ id, role, production, status, notes, co
           <button onClick={handleDelete} className="text-neutral-300 hover:text-red-500 transition text-lg leading-none" title="Löschen">×</button>
         </div>
       </div>
+
+      {(deadline || followUpAt) && (
+        <div className="flex gap-2 mt-2 flex-wrap">
+          {deadline && (
+            <span className={`text-xs px-2 py-0.5 rounded font-medium ${deadlineNah ? "bg-red-100 text-red-700" : "bg-neutral-100 text-neutral-600"}`}>
+              ⏱ Deadline: {formatDate(deadline)}
+            </span>
+          )}
+          {followUpAt && (
+            <span className={`text-xs px-2 py-0.5 rounded font-medium ${followUpFaellig ? "bg-orange-100 text-orange-700" : "bg-neutral-100 text-neutral-600"}`}>
+              ↩ Follow-up: {formatDate(followUpAt)}{followUpFaellig ? " — fällig!" : ""}
+            </span>
+          )}
+        </div>
+      )}
+
       {notes && <p className="text-sm text-neutral-600 mt-2">{notes}</p>}
     </div>
   );

@@ -18,6 +18,8 @@ export async function PATCH(
       ...(data.production !== undefined && { production: data.production }),
       ...(data.notes !== undefined && { notes: data.notes || null }),
       ...(data.contactId !== undefined && { contactId: data.contactId || null }),
+      ...(data.followUpAt !== undefined && { followUpAt: data.followUpAt ? new Date(data.followUpAt) : null }),
+      ...(data.deadline !== undefined && { deadline: data.deadline ? new Date(data.deadline) : null }),
     },
   });
 

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 
 type Kontakt = { id: string; name: string; category: string };
 
+const STATUS_OPTIONEN = ["Anfrage", "Beworben", "Self Tape", "Recall", "Callback", "Gebucht", "Abgesagt"];
+
 export default function BewerbungForm({ kontakte }: { kontakte: Kontakt[] }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -14,12 +16,16 @@ export default function BewerbungForm({ kontakte }: { kontakte: Kontakt[] }) {
     e.preventDefault();
     setLoading(true);
     const form = e.currentTarget;
-    const contactId = (form.elements.namedItem("contactId") as HTMLSelectElement).value;
+    const val = (name: string) =>
+      (form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value;
     const data = {
-      role: (form.elements.namedItem("role") as HTMLInputElement).value,
-      production: (form.elements.namedItem("production") as HTMLInputElement).value,
-      notes: (form.elements.namedItem("notes") as HTMLTextAreaElement).value,
-      contactId: contactId || null,
+      role: val("role"),
+      production: val("production"),
+      status: val("status"),
+      notes: val("notes"),
+      contactId: val("contactId") || null,
+      deadline: val("deadline") || null,
+      followUpAt: val("followUpAt") || null,
     };
     await fetch("/api/bewerbungen", {
       method: "POST",
@@ -37,7 +43,7 @@ export default function BewerbungForm({ kontakte }: { kontakte: Kontakt[] }) {
         onClick={() => setOpen(!open)}
         className="bg-neutral-900 text-white px-4 py-2 rounded hover:bg-neutral-700 transition"
       >
-        + Neue Bewerbung
+        + Neues Casting
       </button>
 
       {open && (
@@ -51,7 +57,15 @@ export default function BewerbungForm({ kontakte }: { kontakte: Kontakt[] }) {
               <label className="block text-sm font-medium mb-1">Produktion *</label>
               <input name="production" required className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
             </div>
-            <div className="col-span-2">
+            <div>
+              <label className="block text-sm font-medium mb-1">Status</label>
+              <select name="status" defaultValue="Beworben" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm">
+                {STATUS_OPTIONEN.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div>
               <label className="block text-sm font-medium mb-1">Kontakt (optional)</label>
               <select name="contactId" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm">
                 <option value="">— Kein Kontakt —</option>
@@ -59,6 +73,14 @@ export default function BewerbungForm({ kontakte }: { kontakte: Kontakt[] }) {
                   <option key={k.id} value={k.id}>{k.name} ({k.category})</option>
                 ))}
               </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Deadline (z.B. Self Tape Abgabe)</label>
+              <input type="date" name="deadline" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Follow-up am</label>
+              <input type="date" name="followUpAt" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
             </div>
             <div className="col-span-2">
               <label className="block text-sm font-medium mb-1">Notizen</label>

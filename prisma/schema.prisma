@@ -26,11 +26,12 @@ model Application {
   id          String   @id @default(cuid())
   role        String
   production  String
-  status      String   @default("Beworben") // Beworben, Eingeladen, Callback, Angenommen, Abgesagt
+  status      String   @default("Beworben") // Anfrage, Beworben, Self Tape, Recall, Callback, Gebucht, Abgesagt
   applyDate   DateTime @default(now())
   notes       String?
   material    String?  // Welches Material wurde verlangt
   followUpAt  DateTime?
+  deadline    DateTime? // z.B. Self-Tape-Abgabe
   contactId   String?
   contact     Contact? @relation(fields: [contactId], references: [id])
   createdAt   DateTime @default(now())

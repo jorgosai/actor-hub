@@ -2,23 +2,43 @@ import { prisma } from "@/lib/db";
 import Link from "next/link";
 
 const STATUS_FARBEN: Record<string, { bg: string; text: string; dot: string }> = {
-  Beworben:   { bg: "bg-blue-50",    text: "text-blue-700",   dot: "bg-blue-400" },
-  Eingeladen: { bg: "bg-amber-50",   text: "text-amber-700",  dot: "bg-amber-400" },
-  Callback:   { bg: "bg-violet-50",  text: "text-violet-700", dot: "bg-violet-400" },
-  Angenommen: { bg: "bg-emerald-50", text: "text-emerald-700",dot: "bg-emerald-400" },
-  Abgesagt:   { bg: "bg-red-50",     text: "text-red-600",    dot: "bg-red-400" },
+  Anfrage:     { bg: "bg-neutral-100", text: "text-neutral-600", dot: "bg-neutral-400" },
+  Beworben:    { bg: "bg-blue-50",    text: "text-blue-700",    dot: "bg-blue-400" },
+  "Self Tape": { bg: "bg-amber-50",   text: "text-amber-700",   dot: "bg-amber-400" },
+  Recall:      { bg: "bg-teal-50",    text: "text-teal-700",    dot: "bg-teal-400" },
+  Callback:    { bg: "bg-violet-50",  text: "text-violet-700",  dot: "bg-violet-400" },
+  Gebucht:     { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-400" },
+  Abgesagt:    { bg: "bg-red-50",     text: "text-red-600",     dot: "bg-red-400" },
 };
+
+function formatDate(d: Date): string {
+  return new Date(d).toLocaleDateString("de-DE", { day: "numeric", month: "short" });
+}
 
 export default async function Home() {
   const [bewerbungen, kontakteCount, projekte] = await Promise.all([
-    prisma.application.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
+    prisma.application.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { contact: true },
+    }),
     prisma.contact.count(),
     prisma.project.findMany({ where: { status: "Laufend" } }),
   ]);
 
-  const offen = bewerbungen.filter(
-    (b) => b.status !== "Angenommen" && b.status !== "Abgesagt"
+  const heute = new Date();
+  heute.setHours(0, 0, 0, 0);
+  const in7Tagen = new Date(heute.getTime() + 7 * 86400000);
+
+  const aktive = bewerbungen.filter((b) => b.status !== "Gebucht" && b.status !== "Abgesagt");
+
+  const faelligeFollowUps = aktive.filter(
+    (b) => b.followUpAt && new Date(b.followUpAt) <= heute
   );
+  const naheDeadlines = aktive.filter(
+    (b) => b.deadline && new Date(b.deadline) >= heute && new Date(b.deadline) <= in7Tagen
+  );
+
+  const letzte = bewerbungen.slice(0, 5);
 
   return (
     <div>
@@ -27,18 +47,64 @@ export default async function Home() {
           Dashboard
         </p>
         <h1 className="text-3xl font-light tracking-tight text-foreground mb-1">
-          Guten Morgen, Jorgos.
+          Willkommen zurück.
         </h1>
         <p className="text-muted-foreground text-sm">
-          {offen.length} offene Bewerbungen · {projekte.length} laufende Projekte
+          {aktive.length} aktive Castings · {projekte.length} laufende Projekte
         </p>
       </div>
 
+      {/* Heute wichtig */}
+      {(faelligeFollowUps.length > 0 || naheDeadlines.length > 0) && (
+        <div className="mb-10">
+          <h2 className="text-sm font-semibold text-foreground tracking-tight mb-4">
+            Heute wichtig
+          </h2>
+          <div className="space-y-2">
+            {naheDeadlines.map((b) => (
+              <Link key={`d-${b.id}`} href="/bewerbungen" className="block">
+                <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-3.5 flex items-center justify-between hover:border-red-300 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span className="text-base">⏱</span>
+                    <div>
+                      <p className="text-sm font-medium text-red-900">
+                        Deadline {formatDate(b.deadline!)}: {b.role}
+                      </p>
+                      <p className="text-xs text-red-700/70">{b.production} · Status: {b.status}</p>
+                    </div>
+                  </div>
+                  <span className="text-xs text-red-400">→</span>
+                </div>
+              </Link>
+            ))}
+            {faelligeFollowUps.map((b) => (
+              <Link key={`f-${b.id}`} href="/bewerbungen" className="block">
+                <div className="bg-orange-50 border border-orange-200 rounded-xl px-5 py-3.5 flex items-center justify-between hover:border-orange-300 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span className="text-base">↩</span>
+                    <div>
+                      <p className="text-sm font-medium text-orange-900">
+                        Follow-up fällig: {b.role} — {b.production}
+                      </p>
+                      <p className="text-xs text-orange-700/70">
+                        {b.contact ? `Kontakt: ${b.contact.name}` : `Geplant für ${formatDate(b.followUpAt!)}`}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-xs text-orange-400">→</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-10">
         {[
-          { href: "/bewerbungen", label: "Offene Castings", value: offen.length },
-          { href: "/kontakte",    label: "Kontakte",        value: kontakteCount },
-          { href: "/projekte",    label: "Laufende Projekte", value: projekte.length },
+          { href: "/bewerbungen", label: "Aktive Castings", value: aktive.length },
+          { href: "/kontakte", label: "Kontakte", value: kontakteCount },
+          { href: "/projekte", label: "Laufende Projekte", value: projekte.length },
         ].map((stat) => (
           <Link key={stat.href} href={stat.href}>
             <div className="bg-card border border-border rounded-2xl p-6 hover:border-primary/40 hover:shadow-sm transition-all duration-200 cursor-pointer group">
@@ -56,29 +122,30 @@ export default async function Home() {
         ))}
       </div>
 
+      {/* Letzte Castings */}
       <div>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-sm font-semibold text-foreground tracking-tight">Letzte Bewerbungen</h2>
+          <h2 className="text-sm font-semibold text-foreground tracking-tight">Letzte Castings</h2>
           <Link href="/bewerbungen" className="text-xs text-muted-foreground hover:text-primary transition-colors">
             Alle ansehen →
           </Link>
         </div>
 
-        {bewerbungen.length === 0 ? (
+        {letzte.length === 0 ? (
           <div className="bg-card border border-border rounded-2xl p-10 text-center">
-            <p className="text-muted-foreground text-sm">Noch keine Bewerbungen.</p>
+            <p className="text-muted-foreground text-sm">Noch keine Castings.</p>
             <Link href="/bewerbungen" className="text-xs text-primary mt-2 inline-block hover:underline">
-              Erste Bewerbung eintragen →
+              Erstes Casting eintragen →
             </Link>
           </div>
         ) : (
           <div className="bg-card border border-border rounded-2xl overflow-hidden">
-            {bewerbungen.map((b, i) => {
+            {letzte.map((b, i) => {
               const f = STATUS_FARBEN[b.status] ?? { bg: "bg-muted", text: "text-muted-foreground", dot: "bg-muted-foreground/40" };
               return (
                 <div
                   key={b.id}
-                  className={`flex items-center justify-between px-6 py-4 ${i !== bewerbungen.length - 1 ? "border-b border-border" : ""}`}
+                  className={`flex items-center justify-between px-6 py-4 ${i !== letzte.length - 1 ? "border-b border-border" : ""}`}
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${f.dot}`} />

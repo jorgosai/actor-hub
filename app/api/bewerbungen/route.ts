@@ -12,6 +12,9 @@ export async function POST(request: Request) {
       production: data.production,
       notes: data.notes,
       contactId: data.contactId ?? null,
+      status: data.status ?? "Beworben",
+      followUpAt: data.followUpAt ? new Date(data.followUpAt) : null,
+      deadline: data.deadline ? new Date(data.deadline) : null,
     },
   });
 
