@@ -40,6 +40,27 @@ model Application {
   events      Event[]
 }
 
+model Goal {
+  id         String    @id @default(cuid())
+  title      String
+  horizon    String    @default("Mittelfristig") // Kurzfristig, Mittelfristig, Langfristig
+  done       Boolean   @default(false)
+  targetDate DateTime?
+  notes      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Wish {
+  id        String   @id @default(cuid())
+  title     String
+  type      String   @default("Rolle") // Rolle, Produktion, Regisseur, Agentur
+  achieved  Boolean  @default(false)
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Material {
   id        String   @id @default(cuid())
   name      String

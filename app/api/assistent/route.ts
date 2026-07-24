@@ -11,11 +11,13 @@ const anthropic = new Anthropic({
 export async function POST(request: Request) {
   const { prompt, typ } = await request.json();
 
-  const [bewerbungen, kontakte, aufgaben, termine] = await Promise.all([
+  const [bewerbungen, kontakte, aufgaben, termine, ziele, wuensche] = await Promise.all([
     prisma.application.findMany({ orderBy: { createdAt: "desc" }, take: 20 }),
     prisma.contact.findMany({ orderBy: { createdAt: "desc" }, take: 20 }),
     prisma.task.findMany({ where: { done: false }, orderBy: { dueDate: { sort: "asc", nulls: "last" } }, take: 20 }),
     prisma.event.findMany({ where: { date: { gte: new Date() } }, orderBy: { date: "asc" }, take: 10 }),
+    prisma.goal.findMany({ where: { done: false }, take: 10 }),
+    prisma.wish.findMany({ where: { achieved: false }, take: 15 }),
   ]);
 
   const kontext = `
@@ -32,6 +34,12 @@ ${termine.map((t) => `- ${new Date(t.date).toLocaleDateString("de-DE")} ${t.titl
 
 Offene Aufgaben:
 ${aufgaben.map((a) => `- ${a.title}${a.dueDate ? ` (fällig: ${new Date(a.dueDate).toLocaleDateString("de-DE")})` : ""}${a.priority !== "Normal" ? ` [${a.priority}]` : ""}`).join("\n")}
+
+Karriereziele:
+${ziele.map((z) => `- ${z.title} (${z.horizon})`).join("\n")}
+
+Wunschliste:
+${wuensche.map((w) => `- ${w.title} (${w.type})`).join("\n")}
 
 Antworte auf Deutsch, präzise und hilfreich.
 Wichtig: Du kannst nur lesen und analysieren, aber keine Daten erstellen, ändern oder löschen. Wenn jemand dich bittet etwas zu erstellen oder zu ändern, erkläre freundlich dass er das direkt in der App tun soll.

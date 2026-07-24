@@ -21,6 +21,7 @@ const navItems = [
   { href: "/kontakte", label: "Kontakte", icon: "◉" },
   { href: "/projekte", label: "Projekte", icon: "▣" },
   { href: "/material", label: "Material", icon: "◈" },
+  { href: "/karriere", label: "Karriere", icon: "◆" },
   { href: "/assistent", label: "KI-Assistent", icon: "✦" },
 ];
 
