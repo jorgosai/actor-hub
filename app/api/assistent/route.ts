@@ -11,9 +11,10 @@ const anthropic = new Anthropic({
 export async function POST(request: Request) {
   const { prompt, typ } = await request.json();
 
-  const [bewerbungen, kontakte] = await Promise.all([
+  const [bewerbungen, kontakte, aufgaben] = await Promise.all([
     prisma.application.findMany({ orderBy: { createdAt: "desc" }, take: 20 }),
     prisma.contact.findMany({ orderBy: { createdAt: "desc" }, take: 20 }),
+    prisma.task.findMany({ where: { done: false }, orderBy: { dueDate: { sort: "asc", nulls: "last" } }, take: 20 }),
   ]);
 
   const kontext = `
@@ -24,6 +25,9 @@ ${bewerbungen.map((b) => `- ${b.role} bei "${b.production}" (Status: ${b.status}
 
 Kontakte:
 ${kontakte.map((k) => `- ${k.name} (${k.category}${k.company ? `, ${k.company}` : ""}${k.email ? `, ${k.email}` : ""})`).join("\n")}
+
+Offene Aufgaben:
+${aufgaben.map((a) => `- ${a.title}${a.dueDate ? ` (fällig: ${new Date(a.dueDate).toLocaleDateString("de-DE")})` : ""}${a.priority !== "Normal" ? ` [${a.priority}]` : ""}`).join("\n")}
 
 Antworte auf Deutsch, präzise und hilfreich.
 Wichtig: Du kannst nur lesen und analysieren, aber keine Daten erstellen, ändern oder löschen. Wenn jemand dich bittet etwas zu erstellen oder zu ändern, erkläre freundlich dass er das direkt in der App tun soll.

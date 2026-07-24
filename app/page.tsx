@@ -16,13 +16,17 @@ function formatDate(d: Date): string {
 }
 
 export default async function Home() {
-  const [bewerbungen, kontakteCount, projekte] = await Promise.all([
+  const [bewerbungen, kontakteCount, projekte, aufgaben] = await Promise.all([
     prisma.application.findMany({
       orderBy: { createdAt: "desc" },
       include: { contact: true },
     }),
     prisma.contact.count(),
     prisma.project.findMany({ where: { status: "Laufend" } }),
+    prisma.task.findMany({
+      where: { done: false },
+      orderBy: { dueDate: { sort: "asc", nulls: "last" } },
+    }),
   ]);
 
   const heute = new Date();
@@ -36,6 +40,10 @@ export default async function Home() {
   );
   const naheDeadlines = aktive.filter(
     (b) => b.deadline && new Date(b.deadline) >= heute && new Date(b.deadline) <= in7Tagen
+  );
+
+  const faelligeAufgaben = aufgaben.filter(
+    (a) => a.dueDate && new Date(a.dueDate) <= heute
   );
 
   const letzte = bewerbungen.slice(0, 5);
@@ -55,7 +63,7 @@ export default async function Home() {
       </div>
 
       {/* Heute wichtig */}
-      {(faelligeFollowUps.length > 0 || naheDeadlines.length > 0) && (
+      {(faelligeFollowUps.length > 0 || naheDeadlines.length > 0 || faelligeAufgaben.length > 0) && (
         <div className="mb-10">
           <h2 className="text-sm font-semibold text-foreground tracking-tight mb-4">
             Heute wichtig
@@ -74,6 +82,25 @@ export default async function Home() {
                     </div>
                   </div>
                   <span className="text-xs text-red-400">→</span>
+                </div>
+              </Link>
+            ))}
+            {faelligeAufgaben.map((a) => (
+              <Link key={`t-${a.id}`} href="/aufgaben" className="block">
+                <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-3.5 flex items-center justify-between hover:border-amber-300 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span className="text-base">☑</span>
+                    <div>
+                      <p className="text-sm font-medium text-amber-900">
+                        Aufgabe fällig: {a.title}
+                      </p>
+                      <p className="text-xs text-amber-700/70">
+                        Fällig am {formatDate(a.dueDate!)}
+                        {a.priority === "Hoch" ? " · Priorität hoch" : ""}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-xs text-amber-400">→</span>
                 </div>
               </Link>
             ))}
