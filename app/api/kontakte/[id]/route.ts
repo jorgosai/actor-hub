@@ -9,6 +9,16 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const data = await request.json();
+
+  // Schnellaktion: nur lastContact aktualisieren
+  if (data.touchLastContact) {
+    const kontakt = await prisma.contact.update({
+      where: { id },
+      data: { lastContact: new Date() },
+    });
+    return NextResponse.json(kontakt);
+  }
+
   const kontakt = await prisma.contact.update({
     where: { id },
     data: {
@@ -18,6 +28,9 @@ export async function PATCH(
       phone: data.phone || null,
       company: data.company || null,
       notes: data.notes || null,
+      ...(data.lastContact !== undefined && {
+        lastContact: data.lastContact ? new Date(data.lastContact) : null,
+      }),
     },
   });
   return NextResponse.json(kontakt);

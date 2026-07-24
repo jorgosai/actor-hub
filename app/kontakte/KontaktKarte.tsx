@@ -22,13 +22,29 @@ type Props = {
   email: string | null;
   phone: string | null;
   notes: string | null;
+  lastContact: Date | null;
 };
 
-export default function KontaktKarte({ id, name, category, company, email, phone, notes }: Props) {
+function tageSeit(d: Date): number {
+  return Math.floor((Date.now() - new Date(d).getTime()) / 86400000);
+}
+
+export default function KontaktKarte({ id, name, category, company, email, phone, notes, lastContact }: Props) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ name, category, company: company ?? "", email: email ?? "", phone: phone ?? "", notes: notes ?? "" });
+  const [form, setForm] = useState({
+    name,
+    category,
+    company: company ?? "",
+    email: email ?? "",
+    phone: phone ?? "",
+    notes: notes ?? "",
+    lastContact: lastContact ? new Date(lastContact).toISOString().split("T")[0] : "",
+  });
+
+  const tage = lastContact ? tageSeit(lastContact) : null;
+  const lange = tage !== null && tage >= 90;
 
   async function handleSave() {
     setLoading(true);
@@ -39,6 +55,15 @@ export default function KontaktKarte({ id, name, category, company, email, phone
     });
     setLoading(false);
     setEditing(false);
+    router.refresh();
+  }
+
+  async function handleTouch() {
+    await fetch(`/api/kontakte/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ touchLastContact: true }),
+    });
     router.refresh();
   }
 
@@ -70,9 +95,13 @@ export default function KontaktKarte({ id, name, category, company, email, phone
             <label className="block text-xs font-medium mb-1">Telefon</label>
             <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
           </div>
-          <div className="col-span-2">
+          <div>
             <label className="block text-xs font-medium mb-1">Agentur / Firma</label>
             <input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1">Letzter Kontakt</label>
+            <input type="date" value={form.lastContact} onChange={(e) => setForm({ ...form, lastContact: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
           </div>
           <div className="col-span-2">
             <label className="block text-xs font-medium mb-1">Notizen</label>
@@ -92,7 +121,7 @@ export default function KontaktKarte({ id, name, category, company, email, phone
   }
 
   return (
-    <div className="bg-white rounded-lg p-4 shadow-sm border border-neutral-200">
+    <div className={`bg-white rounded-lg p-4 shadow-sm border ${lange ? "border-orange-200" : "border-neutral-200"}`}>
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-semibold">{name}</h2>
@@ -106,10 +135,28 @@ export default function KontaktKarte({ id, name, category, company, email, phone
           <button onClick={handleDelete} className="text-neutral-300 hover:text-red-500 transition text-lg leading-none" title="Löschen">×</button>
         </div>
       </div>
+
       <div className="mt-2 flex gap-4 text-sm text-neutral-500">
         {email && <span>{email}</span>}
         {phone && <span>{phone}</span>}
       </div>
+
+      <div className="mt-3 flex items-center gap-3">
+        <span className={`text-xs ${lange ? "text-orange-600 font-medium" : "text-neutral-400"}`}>
+          {tage === null
+            ? "Noch nie kontaktiert"
+            : tage === 0
+            ? "Heute kontaktiert"
+            : `Letzter Kontakt vor ${tage} ${tage === 1 ? "Tag" : "Tagen"}`}
+        </span>
+        <button
+          onClick={handleTouch}
+          className="text-xs border border-neutral-300 rounded-full px-3 py-0.5 text-neutral-600 hover:bg-neutral-100 transition"
+        >
+          Heute kontaktiert ✓
+        </button>
+      </div>
+
       {notes && <p className="text-sm text-neutral-600 mt-2">{notes}</p>}
     </div>
   );

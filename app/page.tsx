@@ -16,7 +16,7 @@ function formatDate(d: Date): string {
 }
 
 export default async function Home() {
-  const [bewerbungen, kontakteCount, projekte, aufgaben] = await Promise.all([
+  const [bewerbungen, kontakteCount, projekte, aufgaben, pflegeKontakte] = await Promise.all([
     prisma.application.findMany({
       orderBy: { createdAt: "desc" },
       include: { contact: true },
@@ -26,6 +26,10 @@ export default async function Home() {
     prisma.task.findMany({
       where: { done: false },
       orderBy: { dueDate: { sort: "asc", nulls: "last" } },
+    }),
+    prisma.contact.findMany({
+      orderBy: { lastContact: { sort: "asc", nulls: "first" } },
+      take: 3,
     }),
   ]);
 
@@ -44,6 +48,11 @@ export default async function Home() {
 
   const faelligeAufgaben = aufgaben.filter(
     (a) => a.dueDate && new Date(a.dueDate) <= heute
+  );
+
+  const vor90Tagen = new Date(heute.getTime() - 90 * 86400000);
+  const pflegeFaellig = pflegeKontakte.filter(
+    (k) => !k.lastContact || new Date(k.lastContact) < vor90Tagen
   );
 
   const letzte = bewerbungen.slice(0, 5);
@@ -122,6 +131,38 @@ export default async function Home() {
                 </div>
               </Link>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Kontaktpflege */}
+      {pflegeFaellig.length > 0 && (
+        <div className="mb-10">
+          <h2 className="text-sm font-semibold text-foreground tracking-tight mb-4">
+            Kontaktpflege
+          </h2>
+          <div className="space-y-2">
+            {pflegeFaellig.map((k) => {
+              const tage = k.lastContact
+                ? Math.floor((Date.now() - new Date(k.lastContact).getTime()) / 86400000)
+                : null;
+              return (
+                <Link key={k.id} href="/kontakte" className="block">
+                  <div className="bg-card border border-border rounded-xl px-5 py-3.5 flex items-center justify-between hover:border-primary/40 transition-colors">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{k.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {k.category}
+                        {k.company ? ` · ${k.company}` : ""}
+                      </p>
+                    </div>
+                    <span className="text-xs text-orange-600 font-medium">
+                      {tage === null ? "Noch nie kontaktiert" : `Vor ${tage} Tagen`}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}
