@@ -11,10 +11,11 @@ const anthropic = new Anthropic({
 export async function POST(request: Request) {
   const { prompt, typ } = await request.json();
 
-  const [bewerbungen, kontakte, aufgaben] = await Promise.all([
+  const [bewerbungen, kontakte, aufgaben, termine] = await Promise.all([
     prisma.application.findMany({ orderBy: { createdAt: "desc" }, take: 20 }),
     prisma.contact.findMany({ orderBy: { createdAt: "desc" }, take: 20 }),
     prisma.task.findMany({ where: { done: false }, orderBy: { dueDate: { sort: "asc", nulls: "last" } }, take: 20 }),
+    prisma.event.findMany({ where: { date: { gte: new Date() } }, orderBy: { date: "asc" }, take: 10 }),
   ]);
 
   const kontext = `
@@ -25,6 +26,9 @@ ${bewerbungen.map((b) => `- ${b.role} bei "${b.production}" (Status: ${b.status}
 
 Kontakte:
 ${kontakte.map((k) => `- ${k.name} (${k.category}${k.company ? `, ${k.company}` : ""}${k.email ? `, ${k.email}` : ""})`).join("\n")}
+
+Anstehende Termine:
+${termine.map((t) => `- ${new Date(t.date).toLocaleDateString("de-DE")} ${t.title} (${t.type}${t.location ? `, ${t.location}` : ""})`).join("\n")}
 
 Offene Aufgaben:
 ${aufgaben.map((a) => `- ${a.title}${a.dueDate ? ` (fällig: ${new Date(a.dueDate).toLocaleDateString("de-DE")})` : ""}${a.priority !== "Normal" ? ` [${a.priority}]` : ""}`).join("\n")}

@@ -16,7 +16,7 @@ function formatDate(d: Date): string {
 }
 
 export default async function Home() {
-  const [bewerbungen, kontakteCount, projekte, aufgaben, pflegeKontakte] = await Promise.all([
+  const [bewerbungen, kontakteCount, projekte, aufgaben, pflegeKontakte, termine] = await Promise.all([
     prisma.application.findMany({
       orderBy: { createdAt: "desc" },
       include: { contact: true },
@@ -30,6 +30,15 @@ export default async function Home() {
     prisma.contact.findMany({
       orderBy: { lastContact: { sort: "asc", nulls: "first" } },
       take: 3,
+    }),
+    prisma.event.findMany({
+      where: {
+        date: {
+          gte: new Date(new Date().setHours(0, 0, 0, 0)),
+          lt: new Date(new Date().setHours(0, 0, 0, 0) + 2 * 86400000),
+        },
+      },
+      orderBy: { date: "asc" },
     }),
   ]);
 
@@ -72,12 +81,37 @@ export default async function Home() {
       </div>
 
       {/* Heute wichtig */}
-      {(faelligeFollowUps.length > 0 || naheDeadlines.length > 0 || faelligeAufgaben.length > 0) && (
+      {(faelligeFollowUps.length > 0 || naheDeadlines.length > 0 || faelligeAufgaben.length > 0 || termine.length > 0) && (
         <div className="mb-10">
           <h2 className="text-sm font-semibold text-foreground tracking-tight mb-4">
             Heute wichtig
           </h2>
           <div className="space-y-2">
+            {termine.map((t) => {
+              const d = new Date(t.date);
+              const istHeute = d.toDateString() === new Date().toDateString();
+              const hatUhrzeit = d.getHours() !== 0 || d.getMinutes() !== 0;
+              return (
+                <Link key={`e-${t.id}`} href="/kalender" className="block">
+                  <div className="bg-violet-50 border border-violet-200 rounded-xl px-5 py-3.5 flex items-center justify-between hover:border-violet-300 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <span className="text-base">▤</span>
+                      <div>
+                        <p className="text-sm font-medium text-violet-900">
+                          {istHeute ? "Heute" : "Morgen"}
+                          {hatUhrzeit ? ` ${d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}` : ""}: {t.title}
+                        </p>
+                        <p className="text-xs text-violet-700/70">
+                          {t.type}
+                          {t.location ? ` · ${t.location}` : ""}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-xs text-violet-400">→</span>
+                  </div>
+                </Link>
+              );
+            })}
             {naheDeadlines.map((b) => (
               <Link key={`d-${b.id}`} href="/bewerbungen" className="block">
                 <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-3.5 flex items-center justify-between hover:border-red-300 transition-colors">

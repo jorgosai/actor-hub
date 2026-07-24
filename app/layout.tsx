@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: "⬡" },
+  { href: "/kalender", label: "Kalender", icon: "▤" },
   { href: "/aufgaben", label: "Aufgaben", icon: "☑" },
   { href: "/bewerbungen", label: "Castings", icon: "◎" },
   { href: "/kontakte", label: "Kontakte", icon: "◉" },
