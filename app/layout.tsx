@@ -21,6 +21,7 @@ const navItems = [
   { href: "/bewerbungen", label: "Castings", icon: "◎" },
   { href: "/kontakte", label: "Kontakte", icon: "◉" },
   { href: "/projekte", label: "Projekte", icon: "▣" },
+  { href: "/rollen", label: "Rollen", icon: "❋" },
   { href: "/material", label: "Material", icon: "◈" },
   { href: "/karriere", label: "Karriere", icon: "◆" },
   { href: "/assistent", label: "KI-Assistent", icon: "✦" },

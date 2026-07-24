@@ -1,0 +1,50 @@
+export const dynamic = "force-dynamic";
+
+import Anthropic from "@anthropic-ai/sdk";
+import { prisma } from "@/lib/db";
+import { getUserId } from "@/lib/session";
+import { NextResponse } from "next/server";
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const userId = await getUserId();
+  const { prompt } = await request.json();
+
+  const rolle = await prisma.role.findFirst({ where: { id, userId } });
+  if (!rolle) {
+    return NextResponse.json({ error: "Rolle nicht gefunden" }, { status: 404 });
+  }
+
+  const kontext = `
+Du bist ein erfahrener Acting Coach (Schauspielcoach) und hilfst bei der Rollenarbeit.
+Du kennst Methoden wie Stanislawski, Meisner, Chubbuck und arbeitest praxisnah.
+
+Aktuelle Rolle des Schauspielers:
+- Rollenname: ${rolle.name}
+${rolle.production ? `- Produktion: ${rolle.production}` : ""}
+${rolle.biography ? `- Biografie der Figur: ${rolle.biography}` : ""}
+${rolle.goals ? `- Ziele der Figur: ${rolle.goals}` : ""}
+${rolle.obstacles ? `- Hindernisse: ${rolle.obstacles}` : ""}
+${rolle.relationships ? `- Beziehungen: ${rolle.relationships}` : ""}
+${rolle.subtext ? `- Subtext: ${rolle.subtext}` : ""}
+${rolle.notes ? `- Notizen: ${rolle.notes}` : ""}
+
+Antworte auf Deutsch, konkret und praxisnah. Stelle auch Rückfragen, die die Rollenarbeit vertiefen.
+Du kannst nur beraten — Daten ändern kann nur der Schauspieler selbst in der App.
+  `;
+
+  const message = await anthropic.messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: 1024,
+    system: kontext,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  const antwort = message.content[0].type === "text" ? message.content[0].text : "";
+  return NextResponse.json({ antwort });
+}

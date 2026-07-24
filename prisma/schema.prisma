@@ -21,6 +21,7 @@ model User {
   events       Event[]
   materials    Material[]
   goals        Goal[]
+  roles        Role[]
   wishes       Wish[]
 }
 
@@ -59,6 +60,23 @@ model Application {
   events      Event[]
   userId    String?
   user      User?    @relation(fields: [userId], references: [id])
+}
+
+model Role {
+  id            String   @id @default(cuid())
+  name          String   // Rollenname, z.B. "Hamlet"
+  production    String?  // Produktion / Stück / Film
+  status        String   @default("In Arbeit") // In Arbeit, Gespielt, Archiv
+  biography     String?  // Wer ist die Figur?
+  goals         String?  // Was will sie?
+  obstacles     String?  // Was steht ihr im Weg?
+  relationships String?  // Beziehungen zu anderen Figuren
+  subtext       String?  // Subtext & innere Haltung
+  notes         String?  // Freie Notizen, Regie-Anmerkungen
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Goal {
