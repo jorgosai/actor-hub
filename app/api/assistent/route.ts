@@ -13,13 +13,14 @@ export async function POST(request: Request) {
   const userId = await getUserId();
   const { prompt, typ } = await request.json();
 
-  const [bewerbungen, kontakte, aufgaben, termine, ziele, wuensche] = await Promise.all([
+  const [bewerbungen, kontakte, aufgaben, termine, ziele, wuensche, journal] = await Promise.all([
     prisma.application.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 20 }),
     prisma.contact.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 20 }),
     prisma.task.findMany({ where: { userId, done: false }, orderBy: { dueDate: { sort: "asc", nulls: "last" } }, take: 20 }),
     prisma.event.findMany({ where: { userId, date: { gte: new Date() } }, orderBy: { date: "asc" }, take: 10 }),
     prisma.goal.findMany({ where: { userId, done: false }, take: 10 }),
     prisma.wish.findMany({ where: { userId, achieved: false }, take: 15 }),
+    prisma.journalEntry.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 10 }),
   ]);
 
   const kontext = `
@@ -42,6 +43,9 @@ ${ziele.map((z) => `- ${z.title} (${z.horizon})`).join("\n")}
 
 Wunschliste:
 ${wuensche.map((w) => `- ${w.title} (${w.type})`).join("\n")}
+
+Letzte Journal-Einträge (Reflexionen):
+${journal.map((j) => `- ${new Date(j.createdAt).toLocaleDateString("de-DE")} ${j.title}${j.learned ? ` | Gelernt: ${j.learned}` : ""}${j.wentWell ? ` | Lief gut: ${j.wentWell}` : ""}`).join("\n")}
 
 Antworte auf Deutsch, präzise und hilfreich.
 Wichtig: Du kannst nur lesen und analysieren, aber keine Daten erstellen, ändern oder löschen. Wenn jemand dich bittet etwas zu erstellen oder zu ändern, erkläre freundlich dass er das direkt in der App tun soll.

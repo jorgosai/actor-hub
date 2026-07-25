@@ -23,6 +23,7 @@ model User {
   goals        Goal[]
   roles        Role[]
   scenes       Scene[]
+  journal      JournalEntry[]
   wishes       Wish[]
 }
 
@@ -88,6 +89,19 @@ model Scene {
   notes     String?  // Beats, Emotionen, Anmerkungen
   roleId    String
   role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model JournalEntry {
+  id        String   @id @default(cuid())
+  title     String
+  wentWell  String?  // Was lief gut?
+  learned   String?  // Was habe ich gelernt?
+  emotions  String?  // Wie ging es mir?
+  notes     String?
   userId    String?
   user      User?    @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())

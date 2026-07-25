@@ -24,6 +24,7 @@ const navItems = [
   { href: "/rollen", label: "Rollen", icon: "❋" },
   { href: "/material", label: "Material", icon: "◈" },
   { href: "/karriere", label: "Karriere", icon: "◆" },
+  { href: "/journal", label: "Journal", icon: "✎" },
   { href: "/assistent", label: "KI-Assistent", icon: "✦" },
 ];
 
