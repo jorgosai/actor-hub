@@ -22,6 +22,8 @@ export default function SzenenBereich({ roleId, szenen }: { roleId: string; szen
   const [modus, setModus] = useState<"partner" | "abfrage">("partner");
   const [chat, setChat] = useState<Msg[]>([]);
   const [eingabe, setEingabe] = useState("");
+  const [vorlesen, setVorlesen] = useState(false);
+  const [hoert, setHoert] = useState(false);
 
   const aktiv = szenen.find((s) => s.id === offen);
 
@@ -69,8 +71,44 @@ export default function SzenenBereich({ roleId, szenen }: { roleId: string; szen
       body: JSON.stringify({ messages: neueMsgs, modus }),
     });
     const data = await res.json();
-    setChat([...neueMsgs, { role: "assistant", content: data.antwort ?? "Fehler." }]);
+    const antwortText: string = data.antwort ?? "Fehler.";
+    setChat([...neueMsgs, { role: "assistant", content: antwortText }]);
     setBusy(false);
+    if (vorlesen && typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      // Figurennamen (GROSSBUCHSTABEN:) nicht mitsprechen
+      const gesprochen = antwortText.replace(/^[A-ZÄÖÜ]{2,}[^:]*:\s*/gm, "");
+      const u = new SpeechSynthesisUtterance(gesprochen);
+      u.lang = "de-DE";
+      u.rate = 1.0;
+      window.speechSynthesis.speak(u);
+    }
+  }
+
+  function aufnahmeStarten() {
+    type SR = { new (): {
+      lang: string; interimResults: boolean; continuous: boolean;
+      onresult: (e: { results: { [i: number]: { [j: number]: { transcript: string } } }; resultIndex: number }) => void;
+      onend: () => void; onerror: () => void; start: () => void;
+    } };
+    const w = window as unknown as { SpeechRecognition?: SR; webkitSpeechRecognition?: SR };
+    const Erkennung = w.SpeechRecognition ?? w.webkitSpeechRecognition;
+    if (!Erkennung) {
+      alert("Spracheingabe wird von diesem Browser nicht unterstützt. Nutze Chrome oder Safari.");
+      return;
+    }
+    const rec = new Erkennung();
+    rec.lang = "de-DE";
+    rec.interimResults = false;
+    rec.continuous = false;
+    setHoert(true);
+    rec.onresult = (e) => {
+      const text = e.results[e.resultIndex][0].transcript;
+      setEingabe((alt) => (alt ? alt + " " + text : text));
+    };
+    rec.onend = () => setHoert(false);
+    rec.onerror = () => setHoert(false);
+    rec.start();
   }
 
   function probeStarten(m: "partner" | "abfrage") {
@@ -158,6 +196,16 @@ export default function SzenenBereich({ roleId, szenen }: { roleId: string; szen
                     >
                       Text abfragen
                     </button>
+                    <button
+                      onClick={() => {
+                        if (vorlesen) window.speechSynthesis?.cancel();
+                        setVorlesen(!vorlesen);
+                      }}
+                      className={`text-xs px-3 py-1.5 rounded-full border transition ${vorlesen ? "bg-amber-100 border-amber-300 text-amber-800" : "border-neutral-300 hover:bg-neutral-50"}`}
+                      title="Partner-Zeilen vorlesen"
+                    >
+                      {vorlesen ? "🔊 Vorlesen an" : "🔇 Vorlesen aus"}
+                    </button>
                   </div>
 
                   <div className="space-y-2 max-h-72 overflow-y-auto mb-3">
@@ -178,6 +226,14 @@ export default function SzenenBereich({ roleId, szenen }: { roleId: string; szen
                         placeholder={modus === "abfrage" ? "Deine Textzeile..." : "Deine Zeile (oder REGIE: Frage)..."}
                         className="flex-1 border border-neutral-300 rounded px-3 py-2 text-sm"
                       />
+                      <button
+                        onClick={aufnahmeStarten}
+                        disabled={busy || hoert}
+                        className={`px-3 py-2 rounded text-sm border transition ${hoert ? "bg-red-100 border-red-300 animate-pulse" : "border-neutral-300 hover:bg-neutral-50"}`}
+                        title="Zeile einsprechen"
+                      >
+                        {hoert ? "●" : "🎤"}
+                      </button>
                       <button onClick={() => senden()} disabled={busy} className="bg-neutral-900 text-white px-3 py-2 rounded text-sm disabled:opacity-50">
                         →
                       </button>
