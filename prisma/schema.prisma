@@ -22,6 +22,7 @@ model User {
   materials    Material[]
   goals        Goal[]
   roles        Role[]
+  scenes       Scene[]
   wishes       Wish[]
 }
 
@@ -75,8 +76,22 @@ model Role {
   notes         String?  // Freie Notizen, Regie-Anmerkungen
   userId        String?
   user          User?    @relation(fields: [userId], references: [id])
+  scenes        Scene[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model Scene {
+  id        String   @id @default(cuid())
+  title     String   // z.B. "Akt 3, Szene 1"
+  text      String?  // Szenentext / Dialog
+  notes     String?  // Beats, Emotionen, Anmerkungen
+  roleId    String
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Goal {
