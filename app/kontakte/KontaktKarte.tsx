@@ -76,7 +76,7 @@ export default function KontaktKarte({ id, name, category, company, email, phone
   if (editing) {
     return (
       <div className="bg-white rounded-lg p-4 shadow-sm border border-neutral-300">
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
           <div>
             <label className="block text-xs font-medium mb-1">Name</label>
             <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
@@ -103,7 +103,7 @@ export default function KontaktKarte({ id, name, category, company, email, phone
             <label className="block text-xs font-medium mb-1">Letzter Kontakt</label>
             <input type="date" value={form.lastContact} onChange={(e) => setForm({ ...form, lastContact: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
           </div>
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <label className="block text-xs font-medium mb-1">Notizen</label>
             <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
           </div>

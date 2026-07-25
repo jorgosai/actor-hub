@@ -45,7 +45,7 @@ export default function MaterialForm() {
 
       {open && (
         <form onSubmit={handleSubmit} className="mt-4 bg-white border border-neutral-200 rounded-lg p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Name *</label>
               <input name="name" required placeholder="z.B. Showreel 2026" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
@@ -56,7 +56,7 @@ export default function MaterialForm() {
                 {TYPEN.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <label className="block text-sm font-medium mb-1">Link (YouTube, Vimeo, Google Drive, Dropbox...)</label>
               <input name="url" type="url" placeholder="https://..." className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
             </div>
@@ -70,7 +70,7 @@ export default function MaterialForm() {
                 Aktuelle Version
               </label>
             </div>
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <label className="block text-sm font-medium mb-1">Notizen</label>
               <textarea name="notes" rows={2} className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
             </div>

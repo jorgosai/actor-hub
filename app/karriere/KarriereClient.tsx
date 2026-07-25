@@ -113,8 +113,8 @@ export default function KarriereClient({ ziele, wuensche }: { ziele: Goal[]; wue
 
         {zielOpen && (
           <form onSubmit={submitZiel} className="mb-6 bg-white border border-neutral-200 rounded-lg p-5 space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="sm:col-span-2">
                 <label className="block text-xs font-medium mb-1">Ziel *</label>
                 <input name="title" required placeholder="z.B. Hauptrolle in einer TV-Serie" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
               </div>
@@ -128,7 +128,7 @@ export default function KarriereClient({ ziele, wuensche }: { ziele: Goal[]; wue
                 <label className="block text-xs font-medium mb-1">Zieldatum (optional)</label>
                 <input type="date" name="targetDate" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
               </div>
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 <label className="block text-xs font-medium mb-1">Notizen</label>
                 <input name="notes" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
               </div>
@@ -191,7 +191,7 @@ export default function KarriereClient({ ziele, wuensche }: { ziele: Goal[]; wue
 
         {wunschOpen && (
           <form onSubmit={submitWunsch} className="mb-6 bg-white border border-neutral-200 rounded-lg p-5 space-y-3">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium mb-1">Wunsch *</label>
                 <input name="title" required placeholder="z.B. Hamlet spielen" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
@@ -202,7 +202,7 @@ export default function KarriereClient({ ziele, wuensche }: { ziele: Goal[]; wue
                   {WUNSCH_TYPEN.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 <label className="block text-xs font-medium mb-1">Notizen</label>
                 <input name="notes" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
               </div>

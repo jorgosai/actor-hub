@@ -35,7 +35,7 @@ export default function RolleForm() {
 
       {open && (
         <form onSubmit={handleSubmit} className="mt-4 bg-white border border-neutral-200 rounded-lg p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Rollenname *</label>
               <input name="name" required placeholder="z.B. Hamlet" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />

@@ -103,7 +103,7 @@ export default function RolleDetail({ rolle }: { rolle: Rolle }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Charakterarbeit */}
         <div className="space-y-5">
           <h2 className="text-sm font-semibold">Charakterarbeit</h2>
@@ -130,7 +130,7 @@ export default function RolleDetail({ rolle }: { rolle: Rolle }) {
         </div>
 
         {/* KI Acting Coach */}
-        <div className="sticky top-6">
+        <div className="lg:sticky lg:top-6">
           <h2 className="text-sm font-semibold mb-5">Acting Coach</h2>
           <div className="bg-white border border-neutral-200 rounded-xl p-4">
             <div className="flex gap-2 mb-3 flex-wrap">

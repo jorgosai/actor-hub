@@ -25,9 +25,9 @@ export default async function RollenPage() {
 
       <RolleForm />
 
-      <div className="mt-8 grid grid-cols-2 gap-4">
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
         {rollen.length === 0 ? (
-          <div className="col-span-2 text-neutral-500 text-sm space-y-1">
+          <div className="md:col-span-2 text-neutral-500 text-sm space-y-1">
             <p>Noch keine Rollen angelegt.</p>
             <p className="text-neutral-400">
               Jede Rolle bekommt eine eigene Seite mit Charakterarbeit — Biografie, Ziele,

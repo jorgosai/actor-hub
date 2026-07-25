@@ -43,7 +43,7 @@ export default function ProjektForm() {
 
       {open && (
         <form onSubmit={handleSubmit} className="mt-4 bg-white border border-neutral-200 rounded-lg p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Titel *</label>
               <input name="title" required className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
@@ -66,7 +66,7 @@ export default function ProjektForm() {
               <label className="block text-sm font-medium mb-1">Enddatum</label>
               <input name="endDate" type="date" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
             </div>
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <label className="block text-sm font-medium mb-1">Notizen</label>
               <textarea name="notes" rows={3} className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
             </div>

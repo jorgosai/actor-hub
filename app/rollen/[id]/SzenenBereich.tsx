@@ -166,7 +166,7 @@ export default function SzenenBereich({ roleId, szenen }: { roleId: string; szen
             </div>
 
             {offen === s.id && (
-              <div className="border-t border-neutral-100 p-4 grid grid-cols-2 gap-4 items-start">
+              <div className="border-t border-neutral-100 p-4 grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
                 {/* Text */}
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-2">Text</p>

@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
+import MobileNav from "@/components/MobileNav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,8 +46,9 @@ export default async function RootLayout({
   return (
     <html lang="de" className={`${geistSans.variable} h-full`}>
       <body className="h-full flex bg-background">
+        <MobileNav items={navItems} name={name} />
         {/* Sidebar */}
-        <aside className="w-56 flex-shrink-0 flex flex-col h-screen sticky top-0 bg-sidebar border-r border-sidebar-border">
+        <aside className="hidden md:flex w-56 flex-shrink-0 flex-col h-screen sticky top-0 bg-sidebar border-r border-sidebar-border">
           {/* Logo */}
           <div className="px-6 py-7 border-b border-sidebar-border">
             <div className="text-[10px] font-semibold tracking-widest uppercase text-sidebar-foreground/40 mb-1">
@@ -106,7 +108,7 @@ export default async function RootLayout({
 
         {/* Main */}
         <main className="flex-1 overflow-y-auto">
-          <div className="max-w-5xl mx-auto px-10 py-10">
+          <div className="max-w-5xl mx-auto px-4 pt-20 pb-8 md:px-10 md:py-10">
             {children}
           </div>
         </main>

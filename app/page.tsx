@@ -207,7 +207,7 @@ export default async function Home() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
         {[
           { href: "/bewerbungen", label: "Aktive Castings", value: aktive.length },
           { href: "/kontakte", label: "Kontakte", value: kontakteCount },

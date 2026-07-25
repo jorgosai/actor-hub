@@ -55,7 +55,7 @@ export default function ProjektKarte({ id, title, role, status, startDate, endDa
   if (editing) {
     return (
       <div className="bg-white rounded-lg p-4 shadow-sm border border-neutral-300">
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
           <div>
             <label className="block text-xs font-medium mb-1">Titel</label>
             <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
@@ -78,7 +78,7 @@ export default function ProjektKarte({ id, title, role, status, startDate, endDa
             <label className="block text-xs font-medium mb-1">Enddatum</label>
             <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
           </div>
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <label className="block text-xs font-medium mb-1">Notizen</label>
             <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
           </div>
