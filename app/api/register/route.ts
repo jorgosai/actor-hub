@@ -9,6 +9,12 @@ export async function POST(request: Request) {
   const name = (data.name as string | undefined)?.trim();
   const email = (data.email as string | undefined)?.toLowerCase().trim();
   const password = data.password as string | undefined;
+  const inviteCode = (data.inviteCode as string | undefined)?.trim();
+
+  const erwarteterCode = process.env.INVITE_CODE;
+  if (erwarteterCode && inviteCode !== erwarteterCode) {
+    return NextResponse.json({ error: "Ungültiger Einladungscode." }, { status: 403 });
+  }
 
   if (!name || !email || !password || password.length < 8) {
     return NextResponse.json(

@@ -21,7 +21,7 @@ export default function LoginPage() {
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: val("name"), email: val("email"), password: val("password") }),
+        body: JSON.stringify({ name: val("name"), email: val("email"), password: val("password"), inviteCode: val("inviteCode") }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -60,10 +60,17 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="bg-white border border-neutral-200 rounded-2xl p-6 space-y-4 shadow-sm">
           {modus === "register" && (
-            <div>
-              <label className="block text-sm font-medium mb-1">Name</label>
-              <input name="name" required className="w-full border border-neutral-300 rounded-lg px-3 py-2 text-sm" />
-            </div>
+            <>
+              <div>
+                <label className="block text-sm font-medium mb-1">Einladungscode</label>
+                <input name="inviteCode" required className="w-full border border-neutral-300 rounded-lg px-3 py-2 text-sm" />
+                <p className="text-xs text-neutral-400 mt-1">Actor Hub ist aktuell nur auf Einladung nutzbar.</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Name</label>
+                <input name="name" required className="w-full border border-neutral-300 rounded-lg px-3 py-2 text-sm" />
+              </div>
+            </>
           )}
           <div>
             <label className="block text-sm font-medium mb-1">E-Mail</label>
