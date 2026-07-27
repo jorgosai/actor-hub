@@ -101,6 +101,12 @@ export default function LoginPage() {
           </button>
         </form>
 
+        {modus === "login" && (
+          <p className="text-center text-xs text-neutral-400 mt-4">
+            Passwort vergessen? Melde dich beim Betreiber — du bekommst einen Link zum Zurücksetzen.
+          </p>
+        )}
+
         <p className="text-center text-sm text-neutral-500 mt-6">
           {modus === "login" ? (
             <>

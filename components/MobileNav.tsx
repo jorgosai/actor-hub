@@ -10,7 +10,7 @@ export default function MobileNav({ items, name }: { items: Item[]; name: string
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  if (pathname.startsWith("/login")) return null;
+  if (pathname.startsWith("/login") || pathname.startsWith("/reset")) return null;
 
   return (
     <div className="md:hidden">

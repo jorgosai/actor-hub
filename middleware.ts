@@ -7,11 +7,12 @@ export function middleware(req: NextRequest) {
     req.cookies.has("__Secure-authjs.session-token");
 
   const istLogin = req.nextUrl.pathname.startsWith("/login");
+  const istReset = req.nextUrl.pathname.startsWith("/reset");
 
-  if (!hatSession && !istLogin) {
+  if (!hatSession && !istLogin && !istReset) {
     return NextResponse.redirect(new URL("/login", req.nextUrl));
   }
-  if (hatSession && istLogin) {
+  if (hatSession && istLogin && !istReset) {
     return NextResponse.redirect(new URL("/", req.nextUrl));
   }
   return NextResponse.next();

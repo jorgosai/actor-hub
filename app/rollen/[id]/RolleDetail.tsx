@@ -80,7 +80,7 @@ export default function RolleDetail({ rolle }: { rolle: Rolle }) {
       body: JSON.stringify({ prompt: f }),
     });
     const data = await res.json();
-    setAntwort(data.antwort ?? "Fehler — bitte nochmal versuchen.");
+    setAntwort(data.antwort ?? data.error ?? "Etwas ist schiefgelaufen. Bitte nochmal versuchen.");
     setCoachLaeuft(false);
   }
 

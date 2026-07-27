@@ -4,6 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getUserId } from "@/lib/session";
+import { kiAnfrageZaehlen, LimitErreicht } from "@/lib/ailimit";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -12,6 +13,18 @@ const anthropic = new Anthropic({
 export async function POST(request: Request) {
   const userId = await getUserId();
   const { prompt, typ } = await request.json();
+
+  try {
+    await kiAnfrageZaehlen(userId);
+  } catch (e) {
+    if (e instanceof LimitErreicht) {
+      return NextResponse.json(
+        { error: `Du hast dein Tageslimit für KI-Anfragen erreicht. Morgen geht es weiter.` },
+        { status: 429 }
+      );
+    }
+    throw e;
+  }
 
   const [bewerbungen, kontakte, aufgaben, termine, ziele, wuensche, journal] = await Promise.all([
     prisma.application.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 20 }),

@@ -27,7 +27,7 @@ export default function AssistentPage() {
       body: JSON.stringify({ prompt: frage }),
     });
     const data = await res.json();
-    setAntwort(data.antwort);
+    setAntwort(data.antwort ?? data.error ?? "Etwas ist schiefgelaufen. Bitte nochmal versuchen.");
     setLoading(false);
   }
 

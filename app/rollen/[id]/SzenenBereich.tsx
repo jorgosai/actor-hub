@@ -71,10 +71,10 @@ export default function SzenenBereich({ roleId, szenen }: { roleId: string; szen
       body: JSON.stringify({ messages: neueMsgs, modus }),
     });
     const data = await res.json();
-    const antwortText: string = data.antwort ?? "Fehler.";
+    const antwortText: string = data.antwort ?? data.error ?? "Etwas ist schiefgelaufen. Bitte nochmal versuchen.";
     setChat([...neueMsgs, { role: "assistant", content: antwortText }]);
     setBusy(false);
-    if (vorlesen && typeof window !== "undefined" && "speechSynthesis" in window) {
+    if (data.antwort && vorlesen && typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
       // Figurennamen (GROSSBUCHSTABEN:) nicht mitsprechen
       const gesprochen = antwortText.replace(/^[A-ZÄÖÜ]{2,}[^:]*:\s*/gm, "");

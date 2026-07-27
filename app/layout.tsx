@@ -4,6 +4,7 @@ import "./globals.css";
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
 import MobileNav from "@/components/MobileNav";
+import { istAdmin } from "@/lib/admin";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,6 +36,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
+  const adminSichtbar = session?.user?.id ? await istAdmin(session.user.id) : false;
+  const items = adminSichtbar
+    ? [...navItems, { href: "/admin", label: "Verwaltung", icon: "⚙" }]
+    : navItems;
   const name = session?.user?.name ?? "Actor Hub";
   const initialen = name
     .split(" ")
@@ -46,7 +51,7 @@ export default async function RootLayout({
   return (
     <html lang="de" className={`${geistSans.variable} h-full`}>
       <body className="h-full flex bg-background">
-        <MobileNav items={navItems} name={name} />
+        <MobileNav items={items} name={name} />
         {/* Sidebar */}
         <aside className="hidden md:flex w-56 flex-shrink-0 flex-col h-screen sticky top-0 bg-sidebar border-r border-sidebar-border">
           {/* Logo */}
@@ -64,7 +69,7 @@ export default async function RootLayout({
             <div className="text-[10px] font-semibold tracking-widest uppercase text-sidebar-foreground/30 px-3 mb-2">
               Übersicht
             </div>
-            {navItems.map((item) => (
+            {items.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
