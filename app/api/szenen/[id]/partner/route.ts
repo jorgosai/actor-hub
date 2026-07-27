@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/db";
 import { getUserId } from "@/lib/session";
+import { KI_MODELL, antwortText, abgelehnt, ABLEHNUNG_TEXT } from "@/lib/ki";
 import { kiAnfrageZaehlen, LimitErreicht } from "@/lib/ailimit";
 import { NextResponse } from "next/server";
 
@@ -63,12 +64,13 @@ Regeln:
 - Antworte auf Deutsch (außer der Szenentext ist in einer anderen Sprache).`;
 
   const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 1024,
+    model: KI_MODELL,
+    max_tokens: 2048,
+    output_config: { effort: "low" },
     system,
     messages: messages.slice(-20),
   });
 
-  const antwort = message.content[0].type === "text" ? message.content[0].text : "";
+  const antwort = abgelehnt(message) ? ABLEHNUNG_TEXT : antwortText(message);
   return NextResponse.json({ antwort });
 }

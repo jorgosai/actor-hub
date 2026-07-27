@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/db";
 import { getUserId } from "@/lib/session";
+import { KI_MODELL, antwortText, abgelehnt, ABLEHNUNG_TEXT } from "@/lib/ki";
 import { kiAnfrageZaehlen, LimitErreicht } from "@/lib/ailimit";
 import { NextResponse } from "next/server";
 
@@ -52,12 +53,13 @@ Du kannst nur beraten — Daten ändern kann nur der Schauspieler selbst in der 
   `;
 
   const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 1024,
+    model: KI_MODELL,
+    max_tokens: 4096,
+    output_config: { effort: "high" },
     system: kontext,
     messages: [{ role: "user", content: prompt }],
   });
 
-  const antwort = message.content[0].type === "text" ? message.content[0].text : "";
+  const antwort = abgelehnt(message) ? ABLEHNUNG_TEXT : antwortText(message);
   return NextResponse.json({ antwort });
 }
