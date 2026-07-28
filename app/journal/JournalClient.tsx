@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { FELD, KARTE, KNOPF_PRIMAER, LABEL } from "@/components/stil";
+import { Plus } from "lucide-react";
 
 type Eintrag = {
   id: string;
@@ -57,54 +59,55 @@ export default function JournalClient({ eintraege }: { eintraege: Eintrag[] }) {
     <div>
       <button
         onClick={() => setOpen(!open)}
-        className="bg-neutral-900 text-white px-4 py-2 rounded hover:bg-neutral-700 transition"
+        className={KNOPF_PRIMAER}
       >
-        + Neuer Eintrag
+        <Plus className="h-4 w-4" />
+        Neuer Eintrag
       </button>
 
       {open && (
-        <form onSubmit={speichern} className="mt-4 bg-white border border-neutral-200 rounded-xl p-6 space-y-4">
+        <form onSubmit={speichern} className={`${KARTE} mt-4 flex flex-col gap-4`}>
           <div>
-            <label className="block text-sm font-medium mb-1">Anlass *</label>
+            <label className={LABEL}>Anlass *</label>
             <input
               name="title"
               required
               placeholder="z.B. Casting Tatort, Premiere Hamlet, Workshop..."
-              className="w-full border border-neutral-300 rounded px-3 py-2 text-sm"
+              className={FELD}
             />
           </div>
           {FELDER.map((f) => (
             <div key={f.key}>
-              <label className="block text-sm font-medium mb-1">{f.label}</label>
-              <textarea name={f.key} rows={2} className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>{f.label}</label>
+              <textarea name={f.key} rows={2} className={FELD} />
             </div>
           ))}
           <button
             type="submit"
             disabled={busy}
-            className="bg-neutral-900 text-white px-4 py-2 rounded hover:bg-neutral-700 transition disabled:opacity-50"
+            className={KNOPF_PRIMAER}
           >
-            {busy ? "Speichern..." : "Speichern"}
+            {busy ? "Speichern…" : "Speichern"}
           </button>
         </form>
       )}
 
-      <div className="mt-8 space-y-4">
+      <div className="space-y-4">
         {eintraege.length === 0 && !open ? (
-          <div className="text-neutral-500 text-sm space-y-1">
+          <div className="text-muted-foreground text-sm space-y-1">
             <p>Noch keine Einträge.</p>
-            <p className="text-neutral-400">
+            <p className="text-muted-foreground/80">
               Nach jedem Casting, Auftritt oder Projekt kurz reflektieren — mit der Zeit erkennst du
               (und der KI-Assistent) Muster in deiner Entwicklung.
             </p>
           </div>
         ) : (
           eintraege.map((e) => (
-            <div key={e.id} className="bg-white border border-neutral-200 rounded-xl p-5">
+            <div key={e.id} className={KARTE}>
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h2 className="font-semibold">{e.title}</h2>
-                  <p className="text-xs text-neutral-400">
+                  <h2 className="font-display text-lg font-semibold tracking-tight text-card-foreground">{e.title}</h2>
+                  <p className="text-xs text-muted-foreground/80">
                     {new Date(e.createdAt).toLocaleDateString("de-DE", {
                       weekday: "long",
                       day: "numeric",
@@ -115,22 +118,22 @@ export default function JournalClient({ eintraege }: { eintraege: Eintrag[] }) {
                 </div>
                 <button
                   onClick={() => loeschen(e.id, e.title)}
-                  className="text-neutral-300 hover:text-red-500 transition text-lg leading-none"
+                  className="text-muted-foreground/45 hover:text-destructive transition text-lg leading-none"
                 >
                   ×
                 </button>
               </div>
               <div className="space-y-2 text-sm">
                 {e.wentWell && (
-                  <p><span className="text-neutral-400">Lief gut:</span> {e.wentWell}</p>
+                  <p><span className="text-muted-foreground/80">Lief gut:</span> {e.wentWell}</p>
                 )}
                 {e.learned && (
-                  <p><span className="text-neutral-400">Gelernt:</span> {e.learned}</p>
+                  <p><span className="text-muted-foreground/80">Gelernt:</span> {e.learned}</p>
                 )}
                 {e.emotions && (
-                  <p><span className="text-neutral-400">Gefühl:</span> {e.emotions}</p>
+                  <p><span className="text-muted-foreground/80">Gefühl:</span> {e.emotions}</p>
                 )}
-                {e.notes && <p className="text-neutral-600">{e.notes}</p>}
+                {e.notes && <p className="text-muted-foreground">{e.notes}</p>}
               </div>
             </div>
           ))

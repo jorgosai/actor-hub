@@ -15,7 +15,7 @@ export default async function RollePage({ params }: { params: Promise<{ id: stri
 
   return (
     <div>
-      <Link href="/rollen" className="text-xs text-neutral-400 hover:text-neutral-700 transition">
+      <Link href="/rollen" className="text-xs text-muted-foreground/80 hover:text-foreground transition">
         ← Alle Rollen
       </Link>
       <RolleDetail rolle={rolle} />

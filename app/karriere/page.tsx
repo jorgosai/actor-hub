@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { getUserId } from "@/lib/session";
 import KarriereClient from "./KarriereClient";
+import { SeitenKopf } from "@/components/seiten-kopf";
 
 export default async function KarrierePage() {
   const userId = await getUserId();
@@ -12,16 +13,17 @@ export default async function KarrierePage() {
   const erreicht = ziele.filter((z) => z.done).length;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Karriere</h1>
-        {ziele.length > 0 && (
-          <p className="text-sm text-neutral-500">
-            {erreicht} von {ziele.length} Zielen erreicht
-          </p>
-        )}
-      </div>
+    <>
+      <SeitenKopf
+        eyebrow="Entwicklung"
+        titel="Ziele"
+        beschreibung={
+          ziele.length > 0
+            ? `${erreicht} von ${ziele.length} Zielen erreicht — dazu deine Wunschliste.`
+            : "Wo willst du in einem Jahr stehen, wo in fünf? Und was steht auf deiner Wunschliste?"
+        }
+      />
       <KarriereClient ziele={ziele} wuensche={wuensche} />
-    </div>
+    </>
   );
 }

@@ -1,15 +1,24 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { X } from "lucide-react";
+import {
+  CHIP_KLEIN,
+  CHIP_LEISE,
+  CHIP_MARKE,
+  CHIP_NEUTRAL,
+  ICON_KNOPF_LOESCHEN,
+  TON,
+} from "@/components/stil";
 
-const TYP_FARBEN: Record<string, string> = {
-  Casting: "bg-purple-100 text-purple-800",
-  Dreh: "bg-red-100 text-red-800",
-  Probe: "bg-blue-100 text-blue-800",
-  Auftritt: "bg-amber-100 text-amber-800",
-  Training: "bg-green-100 text-green-800",
-  Meeting: "bg-teal-100 text-teal-800",
-  Sonstiges: "bg-neutral-100 text-neutral-600",
+const TYP_CHIP: Record<string, string> = {
+  Casting: TON.sky,
+  Dreh: CHIP_MARKE,
+  Probe: TON.mint,
+  Auftritt: TON.peach,
+  Training: TON.butter,
+  Meeting: CHIP_NEUTRAL,
+  Sonstiges: CHIP_NEUTRAL,
 };
 
 type Props = {
@@ -34,32 +43,34 @@ export default function TerminItem({ id, title, type, date, location, notes, ver
   }
 
   return (
-    <div className="bg-white rounded-lg px-4 py-3 shadow-sm border border-neutral-200 flex items-center gap-4">
-      <div className="text-center w-12 flex-shrink-0">
+    <div className="flex items-center gap-4 px-1 py-3.5">
+      <div className="w-12 shrink-0 text-center">
         {hatUhrzeit ? (
-          <p className="text-sm font-semibold text-neutral-900">
+          <p className="text-sm font-semibold text-foreground">
             {d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
           </p>
         ) : (
-          <p className="text-xs text-neutral-400">ganztags</p>
+          <p className="text-xs text-muted-foreground/80">ganztags</p>
         )}
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-neutral-900">{title}</p>
-        <p className="text-xs text-neutral-400 mt-0.5">
+        <p className="text-sm font-medium text-foreground">{title}</p>
+        <p className="text-xs text-muted-foreground/80 mt-0.5">
           {location && <span>{location}</span>}
           {location && verknuepfung && " · "}
           {verknuepfung && <span>{verknuepfung}</span>}
         </p>
-        {notes && <p className="text-xs text-neutral-500 mt-1">{notes}</p>}
+        {notes && <p className="text-xs text-muted-foreground mt-1">{notes}</p>}
       </div>
 
-      <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap ${TYP_FARBEN[type] ?? "bg-neutral-100"}`}>
+      <span className={`${CHIP_KLEIN} shrink-0 whitespace-nowrap ${TYP_CHIP[type] ?? CHIP_LEISE}`}>
         {type}
       </span>
 
-      <button onClick={handleDelete} className="text-neutral-300 hover:text-red-500 transition text-lg leading-none" title="Löschen">×</button>
+      <button onClick={handleDelete} className={ICON_KNOPF_LOESCHEN} title="Löschen">
+        <X className="h-4 w-4" />
+      </button>
     </div>
   );
 }

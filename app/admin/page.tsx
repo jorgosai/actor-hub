@@ -9,8 +9,8 @@ export default async function AdminPage() {
   if (!(await istAdmin(userId))) {
     return (
       <div>
-        <h1 className="text-2xl font-bold mb-2">Verwaltung</h1>
-        <p className="text-neutral-500 text-sm">Diese Seite ist nur für den Betreiber sichtbar.</p>
+        <h1 className="mb-2 text-foreground font-serif text-[calc(2.25rem*var(--serif-skala))] leading-[1.1] sm:text-[calc(3rem*var(--serif-skala))]">Verwaltung</h1>
+        <p className="text-muted-foreground text-sm">Diese Seite ist nur für den Betreiber sichtbar.</p>
       </div>
     );
   }
@@ -34,8 +34,8 @@ export default async function AdminPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Verwaltung</h1>
-        <p className="text-sm text-neutral-500">
+        <h1 className="text-foreground font-serif text-[calc(2.25rem*var(--serif-skala))] leading-[1.1] sm:text-[calc(3rem*var(--serif-skala))]">Verwaltung</h1>
+        <p className="text-sm text-muted-foreground">
           {liste.length} Nutzer · {kiGesamtHeute} KI-Anfragen heute
         </p>
       </div>

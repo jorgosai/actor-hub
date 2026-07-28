@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  FELD,
+  KARTE,
+  KNOPF_PRIMAER,
+  LABEL,
+} from "@/components/stil";
+import { Plus } from "lucide-react";
 
 export default function RolleForm() {
   const router = useRouter();
@@ -28,24 +35,25 @@ export default function RolleForm() {
     <div>
       <button
         onClick={() => setOpen(!open)}
-        className="bg-neutral-900 text-white px-4 py-2 rounded hover:bg-neutral-700 transition"
+        className={KNOPF_PRIMAER}
       >
-        + Neue Rolle
+        <Plus className="h-4 w-4" />
+        Neue Rolle
       </button>
 
       {open && (
-        <form onSubmit={handleSubmit} className="mt-4 bg-white border border-neutral-200 rounded-lg p-6 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className={`${KARTE} mt-4 flex flex-col gap-5`}>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium mb-1">Rollenname *</label>
-              <input name="name" required placeholder="z.B. Hamlet" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Rollenname *</label>
+              <input name="name" required placeholder="z.B. Hamlet" className={FELD} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Produktion / Stück</label>
-              <input name="production" placeholder="z.B. Hamlet — Schauspielhaus Bochum" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Produktion / Stück</label>
+              <input name="production" placeholder="z.B. Hamlet — Schauspielhaus Bochum" className={FELD} />
             </div>
           </div>
-          <button type="submit" disabled={loading} className="bg-neutral-900 text-white px-4 py-2 rounded hover:bg-neutral-700 transition disabled:opacity-50">
+          <button type="submit" disabled={loading} className={KNOPF_PRIMAER}>
             {loading ? "Erstellen..." : "Rolle anlegen"}
           </button>
         </form>

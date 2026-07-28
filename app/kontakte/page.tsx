@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getUserId } from "@/lib/session";
+import { SeitenKopf } from "@/components/seiten-kopf";
 import KontaktForm from "./KontaktForm";
 import KontaktKarte from "./KontaktKarte";
 
@@ -12,7 +13,8 @@ export default async function KontaktePage() {
     orderBy: { name: "asc" },
   });
 
-  const grenze = new Date(Date.now() - PFLEGE_TAGE * 86400000);
+  const jetzt = new Date().getTime();
+  const grenze = new Date(jetzt - PFLEGE_TAGE * 86400000);
   const pflegeFaellig = kontakte.filter(
     (k) => !k.lastContact || new Date(k.lastContact) < grenze
   );
@@ -21,20 +23,25 @@ export default async function KontaktePage() {
   );
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Kontakte</h1>
-        <p className="text-sm text-neutral-500">{kontakte.length} gesamt</p>
-      </div>
+    <>
+      <SeitenKopf
+        eyebrow="Arbeit"
+        titel="Kontakte"
+        beschreibung={
+          kontakte.length > 0
+            ? `${kontakte.length} ${kontakte.length === 1 ? "Kontakt" : "Kontakte"} — Beziehungen brauchen Pflege, nicht nur Anlässe.`
+            : "Agenten, Casterinnen, Regie, Kolleginnen — hier sammelst du, wer dich kennt."
+        }
+      />
 
       <KontaktForm />
 
       {pflegeFaellig.length > 0 && (
-        <div className="mt-8">
-          <p className="text-xs font-semibold uppercase tracking-wide text-orange-500 mb-3">
+        <div>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-destructive">
             Pflege fällig — über {PFLEGE_TAGE} Tage kein Kontakt ({pflegeFaellig.length})
           </p>
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             {pflegeFaellig.map((k) => (
               <KontaktKarte
                 key={k.id}
@@ -52,15 +59,15 @@ export default async function KontaktePage() {
         </div>
       )}
 
-      <div className="mt-8">
+      <div>
         {aktuelle.length > 0 && pflegeFaellig.length > 0 && (
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-3">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Aktuell ({aktuelle.length})
           </p>
         )}
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           {kontakte.length === 0 ? (
-            <p className="text-neutral-500">Noch keine Kontakte eingetragen.</p>
+            <p className="text-sm text-muted-foreground">Noch keine Kontakte eingetragen.</p>
           ) : (
             aktuelle.map((k) => (
               <KontaktKarte
@@ -78,6 +85,6 @@ export default async function KontaktePage() {
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }

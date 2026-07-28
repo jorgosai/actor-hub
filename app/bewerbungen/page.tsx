@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db";
 import { getUserId } from "@/lib/session";
+import { SeitenKopf } from "@/components/seiten-kopf";
+import { KARTE } from "@/components/stil";
 import BewerbungForm from "./BewerbungForm";
 import BewerbungKarte from "./BewerbungKarte";
 
@@ -10,7 +12,7 @@ export default async function BewerbungenPage() {
   const [bewerbungen, kontakte] = await Promise.all([
     prisma.application.findMany({
       where: { userId },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       include: { contact: true },
     }),
     prisma.contact.findMany({ where: { userId }, orderBy: { name: "asc" } }),
@@ -21,34 +23,59 @@ export default async function BewerbungenPage() {
     anzahl: bewerbungen.filter((b) => b.status === stufe).length,
   }));
 
+  const gesamt = bewerbungen.length;
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Castings</h1>
-      </div>
+    <>
+      <SeitenKopf
+        eyebrow="Arbeit"
+        titel="Castings"
+        beschreibung={
+          gesamt > 0
+            ? `${gesamt} ${gesamt === 1 ? "Bewerbung" : "Bewerbungen"} insgesamt — vom ersten Kontakt bis zur Zusage.`
+            : "Trag deine erste Bewerbung ein, dann füllt sich die Pipeline."
+        }
+      />
 
       {/* Pipeline Übersicht */}
-      <div className="bg-white border border-neutral-200 rounded-lg p-5 mb-6">
-        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-4">Pipeline</p>
-        <div className="flex items-center">
+      <section className={`${KARTE} animate-rise`} style={{ animationDelay: "80ms" }}>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          Pipeline
+        </p>
+        {/*
+          Auf dem Handy als Raster mit drei Spalten — nebeneinander passen
+          sechs Stufen nicht, „Gebucht" wurde sonst abgeschnitten.
+          Ab Tablet wieder als Reihe mit Pfeilen dazwischen.
+        */}
+        <div className="mt-5 grid grid-cols-3 gap-y-5 sm:flex sm:items-center sm:gap-y-0">
           {counts.map((c, i) => (
-            <div key={c.stufe} className="flex items-center flex-1 last:flex-none">
-              <div className="text-center flex-1">
-                <p className={`text-2xl font-light ${c.anzahl > 0 ? "text-neutral-900" : "text-neutral-300"}`}>
+            <div key={c.stufe} className="flex items-center sm:flex-1 sm:last:flex-none">
+              <div className="flex-1 text-center">
+                <p
+                  className={`font-serif text-[calc(1.7rem*var(--serif-skala))] tabular-nums sm:text-[calc(2rem*var(--serif-skala))] ${
+                    c.anzahl > 0 ? "text-card-foreground" : "text-muted-foreground/35"
+                  }`}
+                >
                   {c.anzahl}
                 </p>
-                <p className="text-xs text-neutral-500 mt-0.5 whitespace-nowrap">{c.stufe}</p>
+                <p className="mt-1 whitespace-nowrap text-[11px] text-muted-foreground sm:text-xs">
+                  {c.stufe}
+                </p>
               </div>
-              {i < counts.length - 1 && <span className="text-neutral-300 px-1">›</span>}
+              {i < counts.length - 1 && (
+                <span aria-hidden className="hidden px-1 text-muted-foreground/35 sm:inline">
+                  ›
+                </span>
+              )}
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
       <BewerbungForm kontakte={kontakte} />
-      <div className="mt-8 space-y-4">
+      <div className="flex flex-col gap-4">
         {bewerbungen.length === 0 ? (
-          <p className="text-neutral-500">Noch keine Castings eingetragen.</p>
+          <p className="text-sm text-muted-foreground">Noch keine Castings eingetragen.</p>
         ) : (
           bewerbungen.map((b) => (
             <BewerbungKarte
@@ -67,6 +94,6 @@ export default async function BewerbungenPage() {
           ))
         )}
       </div>
-    </div>
+    </>
   );
 }

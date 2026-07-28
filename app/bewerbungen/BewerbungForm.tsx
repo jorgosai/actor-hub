@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Plus, X } from "lucide-react";
+import { FELD, KARTE, KNOPF_PRIMAER, LABEL } from "@/components/stil";
 
 type Kontakt = { id: string; name: string; category: string };
 
@@ -39,35 +41,33 @@ export default function BewerbungForm({ kontakte }: { kontakte: Kontakt[] }) {
 
   return (
     <div>
-      <button
-        onClick={() => setOpen(!open)}
-        className="bg-neutral-900 text-white px-4 py-2 rounded hover:bg-neutral-700 transition"
-      >
-        + Neues Casting
+      <button onClick={() => setOpen(!open)} className={KNOPF_PRIMAER}>
+        {open ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+        {open ? "Abbrechen" : "Neues Casting"}
       </button>
 
       {open && (
-        <form onSubmit={handleSubmit} className="mt-4 bg-white border border-neutral-200 rounded-lg p-6 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className={`${KARTE} mt-4 flex flex-col gap-5`}>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium mb-1">Rolle *</label>
-              <input name="role" required className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Rolle *</label>
+              <input name="role" required className={FELD} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Produktion *</label>
-              <input name="production" required className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Produktion *</label>
+              <input name="production" required className={FELD} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Status</label>
-              <select name="status" defaultValue="Beworben" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm">
+              <label className={LABEL}>Status</label>
+              <select name="status" defaultValue="Beworben" className={FELD}>
                 {STATUS_OPTIONEN.map((s) => (
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Kontakt (optional)</label>
-              <select name="contactId" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm">
+              <label className={LABEL}>Kontakt (optional)</label>
+              <select name="contactId" className={FELD}>
                 <option value="">— Kein Kontakt —</option>
                 {kontakte.map((k) => (
                   <option key={k.id} value={k.id}>{k.name} ({k.category})</option>
@@ -75,24 +75,20 @@ export default function BewerbungForm({ kontakte }: { kontakte: Kontakt[] }) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Deadline (z.B. Self Tape Abgabe)</label>
-              <input type="date" name="deadline" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Deadline (z.B. Self Tape Abgabe)</label>
+              <input type="date" name="deadline" className={FELD} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Follow-up am</label>
-              <input type="date" name="followUpAt" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Follow-up am</label>
+              <input type="date" name="followUpAt" className={FELD} />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium mb-1">Notizen</label>
-              <textarea name="notes" rows={3} className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Notizen</label>
+              <textarea name="notes" rows={3} className={FELD} />
             </div>
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-neutral-900 text-white px-4 py-2 rounded hover:bg-neutral-700 transition disabled:opacity-50"
-          >
-            {loading ? "Speichern..." : "Speichern"}
+          <button type="submit" disabled={loading} className={`${KNOPF_PRIMAER} self-start`}>
+            {loading ? "Speichern…" : "Speichern"}
           </button>
         </form>
       )}

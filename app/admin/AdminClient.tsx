@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { KARTE, KNOPF_KLEIN } from "@/components/stil";
 
 type Nutzer = {
   id: string;
@@ -36,25 +37,25 @@ export default function AdminClient({ nutzer }: { nutzer: Nutzer[] }) {
   return (
     <div className="space-y-3">
       {nutzer.map((u) => (
-        <div key={u.id} className="bg-white border border-neutral-200 rounded-xl p-4">
+        <div key={u.id} className={KARTE}>
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="min-w-0">
               <p className="text-sm font-medium">{u.name}</p>
-              <p className="text-xs text-neutral-400 truncate">{u.email}</p>
+              <p className="text-xs text-muted-foreground/80 truncate">{u.email}</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-xs text-neutral-400">dabei seit</p>
+                <p className="text-xs text-muted-foreground/80">dabei seit</p>
                 <p className="text-xs">{u.seit}</p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-neutral-400">KI heute</p>
+                <p className="text-xs text-muted-foreground/80">KI heute</p>
                 <p className="text-xs tabular-nums">{u.kiHeute}</p>
               </div>
               <button
                 onClick={() => linkErzeugen(u.id)}
                 disabled={busy === u.id}
-                className="text-xs border border-neutral-300 rounded-full px-3 py-1.5 hover:bg-neutral-50 transition disabled:opacity-50 whitespace-nowrap"
+                className={`${KNOPF_KLEIN} whitespace-nowrap disabled:opacity-50`}
               >
                 {busy === u.id ? "..." : "Passwort-Link"}
               </button>
@@ -62,16 +63,16 @@ export default function AdminClient({ nutzer }: { nutzer: Nutzer[] }) {
           </div>
 
           {links[u.id] && (
-            <div className="mt-3 pt-3 border-t border-neutral-100 flex items-center gap-2">
+            <div className="mt-3 pt-3 border-t border-border flex items-center gap-2">
               <input
                 readOnly
                 value={links[u.id]}
                 onFocus={(e) => e.currentTarget.select()}
-                className="flex-1 text-xs bg-neutral-50 border border-neutral-200 rounded px-2 py-1.5 font-mono"
+                className="flex-1 rounded-lg bg-secondary px-2.5 py-1.5 font-mono text-xs text-secondary-foreground"
               />
               <button
                 onClick={() => kopieren(u.id)}
-                className="text-xs bg-neutral-900 text-white rounded px-3 py-1.5 hover:bg-neutral-700 transition whitespace-nowrap"
+                className="text-xs bg-brand text-brand-foreground rounded px-3 py-1.5 hover:bg-brand/90 transition whitespace-nowrap"
               >
                 {kopiert === u.id ? "Kopiert ✓" : "Kopieren"}
               </button>
@@ -80,7 +81,7 @@ export default function AdminClient({ nutzer }: { nutzer: Nutzer[] }) {
         </div>
       ))}
 
-      <p className="text-xs text-neutral-400 pt-2">
+      <p className="text-xs text-muted-foreground/80 pt-2">
         Der Passwort-Link ist 24 Stunden gültig und kann einmal benutzt werden. Schick ihn der Person
         direkt (WhatsApp, SMS, E-Mail) — damit setzt sie sich selbst ein neues Passwort.
       </p>

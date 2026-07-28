@@ -2,14 +2,21 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Pencil, X } from "lucide-react";
+import {
+  CHIP,
+  FELD,
+  ICON_KNOPF,
+  ICON_KNOPF_LOESCHEN,
+  KARTE,
+  KNOPF_PRIMAER,
+  KNOPF_SEKUNDAER,
+  LABEL,
+  PROJEKT_CHIP,
+  chipTon,
+} from "@/components/stil";
 
 const STATUS_OPTIONEN = ["Laufend", "Geplant", "Abgeschlossen"];
-
-const STATUS_FARBEN: Record<string, string> = {
-  Laufend: "bg-green-100 text-green-800",
-  Geplant: "bg-blue-100 text-blue-800",
-  Abgeschlossen: "bg-neutral-100 text-neutral-600",
-};
 
 type Props = {
   id: string;
@@ -54,40 +61,40 @@ export default function ProjektKarte({ id, title, role, status, startDate, endDa
 
   if (editing) {
     return (
-      <div className="bg-white rounded-lg p-4 shadow-sm border border-neutral-300">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+      <div className={KARTE}>
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-medium mb-1">Titel</label>
-            <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+            <label className={LABEL}>Titel</label>
+            <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className={FELD} />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Meine Rolle</label>
-            <input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+            <label className={LABEL}>Meine Rolle</label>
+            <input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className={FELD} />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Status</label>
-            <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm">
+            <label className={LABEL}>Status</label>
+            <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className={FELD}>
               {STATUS_OPTIONEN.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Startdatum</label>
-            <input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+            <label className={LABEL}>Startdatum</label>
+            <input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className={FELD} />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Enddatum</label>
-            <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+            <label className={LABEL}>Enddatum</label>
+            <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className={FELD} />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-xs font-medium mb-1">Notizen</label>
-            <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+            <label className={LABEL}>Notizen</label>
+            <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className={FELD} />
           </div>
         </div>
         <div className="flex gap-2">
-          <button onClick={handleSave} disabled={loading} className="bg-neutral-900 text-white px-3 py-1.5 rounded text-sm hover:bg-neutral-700 transition disabled:opacity-50">
-            {loading ? "Speichern..." : "Speichern"}
+          <button onClick={handleSave} disabled={loading} className={KNOPF_PRIMAER}>
+            {loading ? "Speichern…" : "Speichern"}
           </button>
-          <button onClick={() => setEditing(false)} className="px-3 py-1.5 rounded text-sm border border-neutral-300 hover:bg-neutral-50 transition">
+          <button onClick={() => setEditing(false)} className={KNOPF_SEKUNDAER}>
             Abbrechen
           </button>
         </div>
@@ -96,27 +103,31 @@ export default function ProjektKarte({ id, title, role, status, startDate, endDa
   }
 
   return (
-    <div className="bg-white rounded-lg p-4 shadow-sm border border-neutral-200">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="font-semibold">{title}</h2>
-          {role && <p className="text-sm text-neutral-500">Rolle: {role}</p>}
+    <div className={KARTE}>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h2 className="font-display text-lg font-semibold tracking-tight text-card-foreground">
+            {title}
+          </h2>
+          {role && <p className="text-sm text-muted-foreground">Rolle: {role}</p>}
         </div>
-        <div className="flex items-center gap-2">
-          <span className={`text-xs px-3 py-1 rounded-full font-medium ${STATUS_FARBEN[status] ?? "bg-neutral-100"}`}>
-            {status}
-          </span>
-          <button onClick={() => setEditing(true)} className="text-neutral-400 hover:text-neutral-700 transition text-sm" title="Bearbeiten">✎</button>
-          <button onClick={handleDelete} className="text-neutral-300 hover:text-red-500 transition text-lg leading-none" title="Löschen">×</button>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <span className={`${CHIP} ${chipTon(PROJEKT_CHIP, status)}`}>{status}</span>
+          <button onClick={() => setEditing(true)} className={ICON_KNOPF} title="Bearbeiten">
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+          <button onClick={handleDelete} className={ICON_KNOPF_LOESCHEN} title="Löschen">
+            <X className="h-4 w-4" />
+          </button>
         </div>
       </div>
       {(startDate || endDate) && (
-        <p className="text-sm text-neutral-500 mt-2">
+        <p className="mt-2 text-sm text-muted-foreground">
           {startDate ? new Date(startDate).toLocaleDateString("de-DE") : "?"} –{" "}
           {endDate ? new Date(endDate).toLocaleDateString("de-DE") : "laufend"}
         </p>
       )}
-      {notes && <p className="text-sm text-neutral-600 mt-2">{notes}</p>}
+      {notes && <p className="text-sm text-muted-foreground mt-2">{notes}</p>}
     </div>
   );
 }

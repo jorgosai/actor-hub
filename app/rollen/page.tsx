@@ -1,13 +1,9 @@
 import { prisma } from "@/lib/db";
 import { getUserId } from "@/lib/session";
 import Link from "next/link";
+import { SeitenKopf } from "@/components/seiten-kopf";
+import { CHIP, KARTE_HOVER, ROLLE_CHIP, chipTon } from "@/components/stil";
 import RolleForm from "./RolleForm";
-
-const STATUS_FARBEN: Record<string, string> = {
-  "In Arbeit": "bg-blue-100 text-blue-800",
-  Gespielt: "bg-green-100 text-green-800",
-  Archiv: "bg-neutral-100 text-neutral-500",
-};
 
 export default async function RollenPage() {
   const userId = await getUserId();
@@ -17,45 +13,74 @@ export default async function RollenPage() {
   });
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Rollen</h1>
-        <p className="text-sm text-neutral-500">{rollen.length} Rollen</p>
-      </div>
+    <>
+      <SeitenKopf
+        eyebrow="Arbeit"
+        titel="Rollen"
+        beschreibung={
+          rollen.length > 0
+            ? `${rollen.length} ${rollen.length === 1 ? "Rolle" : "Rollen"} — jede mit eigener Charakterarbeit und KI-Coach.`
+            : "Jede Rolle bekommt eine eigene Seite für Charakterarbeit — und einen KI-Coach, der sie kennt."
+        }
+      />
 
       <RolleForm />
 
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {rollen.length === 0 ? (
-          <div className="md:col-span-2 text-neutral-500 text-sm space-y-1">
-            <p>Noch keine Rollen angelegt.</p>
-            <p className="text-neutral-400">
-              Jede Rolle bekommt eine eigene Seite mit Charakterarbeit — Biografie, Ziele,
-              Hindernisse, Subtext — und einem KI-Acting-Coach der deine Rolle kennt.
-            </p>
-          </div>
+          <p className="text-sm text-muted-foreground md:col-span-2">
+            Noch keine Rollen angelegt. Leg deine erste an — Biografie, Ziele, Hindernisse,
+            Beziehungen und Subtext bekommen dort jeweils einen eigenen Platz.
+          </p>
         ) : (
-          rollen.map((r) => {
-            const ausgefuellt = [r.biography, r.goals, r.obstacles, r.relationships, r.subtext].filter(Boolean).length;
+          rollen.map((r, i) => {
+            const ausgefuellt = [
+              r.biography,
+              r.goals,
+              r.obstacles,
+              r.relationships,
+              r.subtext,
+            ].filter(Boolean).length;
             return (
-              <Link key={r.id} href={`/rollen/${r.id}`}>
-                <div className="bg-white border border-neutral-200 rounded-xl p-5 hover:border-neutral-400 hover:shadow-sm transition cursor-pointer h-full">
-                  <div className="flex items-start justify-between mb-2">
-                    <h2 className="font-semibold text-lg">{r.name}</h2>
-                    <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${STATUS_FARBEN[r.status] ?? "bg-neutral-100"}`}>
-                      {r.status}
-                    </span>
+              <Link
+                key={r.id}
+                href={`/rollen/${r.id}`}
+                className={`${KARTE_HOVER} animate-rise block`}
+                style={{ animationDelay: `${80 + i * 50}ms` }}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <h2 className="font-display text-lg font-semibold tracking-tight text-card-foreground">
+                    {r.name}
+                  </h2>
+                  <span className={`${CHIP} shrink-0 ${chipTon(ROLLE_CHIP, r.status)}`}>
+                    {r.status}
+                  </span>
+                </div>
+                {r.production && (
+                  <p className="mt-1 text-sm text-muted-foreground">{r.production}</p>
+                )}
+
+                {/* Fortschritt der Charakterarbeit — fünf Striche, keine Prozentzahl */}
+                <div className="mt-5 flex items-center gap-3">
+                  <div className="flex flex-1 gap-1.5">
+                    {[0, 1, 2, 3, 4].map((n) => (
+                      <span
+                        key={n}
+                        className={`h-1.5 flex-1 rounded-full ${
+                          n < ausgefuellt ? "bg-brand" : "bg-secondary"
+                        }`}
+                      />
+                    ))}
                   </div>
-                  {r.production && <p className="text-sm text-neutral-500 mb-3">{r.production}</p>}
-                  <p className="text-xs text-neutral-400">
-                    Charakterarbeit: {ausgefuellt} von 5 Bereichen ausgefüllt
-                  </p>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {ausgefuellt} von 5
+                  </span>
                 </div>
               </Link>
             );
           })
         )}
       </div>
-    </div>
+    </>
   );
 }

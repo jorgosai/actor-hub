@@ -1,21 +1,27 @@
 import { prisma } from "@/lib/db";
 import { getUserId } from "@/lib/session";
 import JournalClient from "./JournalClient";
+import { SeitenKopf } from "@/components/seiten-kopf";
 
 export default async function JournalPage() {
   const userId = await getUserId();
   const eintraege = await prisma.journalEntry.findMany({
     where: { userId },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
   });
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Journal</h1>
-        <p className="text-sm text-neutral-500">{eintraege.length} Einträge</p>
-      </div>
+    <>
+      <SeitenKopf
+        eyebrow="Entwicklung"
+        titel="Journal"
+        beschreibung={
+          eintraege.length > 0
+            ? `${eintraege.length} ${eintraege.length === 1 ? "Eintrag" : "Einträge"} — was gut lief, was nicht, und was du daraus mitnimmst.`
+            : "Nach jedem Casting kurz festhalten, was lief. Nach einem Jahr siehst du Muster."
+        }
+      />
       <JournalClient eintraege={eintraege} />
-    </div>
+    </>
   );
 }

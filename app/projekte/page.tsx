@@ -2,23 +2,30 @@ import { prisma } from "@/lib/db";
 import { getUserId } from "@/lib/session";
 import ProjektForm from "./ProjektForm";
 import ProjektKarte from "./ProjektKarte";
+import { SeitenKopf } from "@/components/seiten-kopf";
 
 export default async function ProjektePage() {
   const userId = await getUserId();
   const projekte = await prisma.project.findMany({
     where: { userId },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
   });
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Projekte</h1>
-      </div>
+    <>
+      <SeitenKopf
+        eyebrow="Arbeit"
+        titel="Projekte"
+        beschreibung={
+          projekte.length > 0
+            ? `${projekte.length} ${projekte.length === 1 ? "Projekt" : "Projekte"} — geplant, laufend und abgeschlossen.`
+            : "Alles, was du tatsächlich spielst — von der Zusage bis zur letzten Vorstellung."
+        }
+      />
       <ProjektForm />
-      <div className="mt-8 space-y-4">
+      <div className="space-y-4">
         {projekte.length === 0 ? (
-          <p className="text-neutral-500">Noch keine Projekte eingetragen.</p>
+          <p className="text-muted-foreground">Noch keine Projekte eingetragen.</p>
         ) : (
           projekte.map((p) => (
             <ProjektKarte
@@ -34,6 +41,6 @@ export default async function ProjektePage() {
           ))
         )}
       </div>
-    </div>
+    </>
   );
 }

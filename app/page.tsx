@@ -1,275 +1,238 @@
 import { prisma } from "@/lib/db";
 import { getUserId } from "@/lib/session";
-import Link from "next/link";
+import { auth } from "@/auth";
 
-const STATUS_FARBEN: Record<string, { bg: string; text: string; dot: string }> = {
-  Anfrage:     { bg: "bg-neutral-100", text: "text-neutral-600", dot: "bg-neutral-400" },
-  Beworben:    { bg: "bg-blue-50",    text: "text-blue-700",    dot: "bg-blue-400" },
-  "Self Tape": { bg: "bg-amber-50",   text: "text-amber-700",   dot: "bg-amber-400" },
-  Recall:      { bg: "bg-teal-50",    text: "text-teal-700",    dot: "bg-teal-400" },
-  Callback:    { bg: "bg-violet-50",  text: "text-violet-700",  dot: "bg-violet-400" },
-  Gebucht:     { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-400" },
-  Abgesagt:    { bg: "bg-red-50",     text: "text-red-600",     dot: "bg-red-400" },
-};
+import { DashboardHeader } from "@/components/dashboard/header";
+import { Tagesueberblick } from "@/components/dashboard/tagesueberblick";
+import { StatCards, type Kennzahl } from "@/components/dashboard/stat-cards";
+import { CastingPipeline } from "@/components/dashboard/casting-pipeline";
+import { RecallRing } from "@/components/dashboard/recall-ring";
+import { HeuteWichtig, type Eintrag } from "@/components/dashboard/heute-wichtig";
+import { RecentCastings, type CastingZeile } from "@/components/dashboard/recent-castings";
 
-function formatDate(d: Date): string {
-  return new Date(d).toLocaleDateString("de-DE", { day: "numeric", month: "short" });
+const PIPELINE = ["Anfrage", "Beworben", "Self Tape", "Recall", "Callback", "Gebucht"];
+const AB_RECALL = ["Recall", "Callback", "Gebucht"];
+const PFLEGE_TAGE = 90;
+
+const tag = (d: Date) =>
+  new Date(d).toLocaleDateString("de-DE", { day: "numeric", month: "short" });
+const uhr = (d: Date) =>
+  new Date(d).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+
+function initialen(text: string): string {
+  return text
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
 }
 
 export default async function Home() {
   const userId = await getUserId();
-  const [bewerbungen, kontakteCount, projekte, aufgaben, pflegeKontakte, termine] = await Promise.all([
-    prisma.application.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      include: { contact: true },
-    }),
-    prisma.contact.count({ where: { userId } }),
-    prisma.project.findMany({ where: { userId, status: "Laufend" } }),
-    prisma.task.findMany({
-      where: { userId, done: false },
-      orderBy: { dueDate: { sort: "asc", nulls: "last" } },
-    }),
-    prisma.contact.findMany({
-      where: { userId },
-      orderBy: { lastContact: { sort: "asc", nulls: "first" } },
-      take: 3,
-    }),
-    prisma.event.findMany({
-      where: {
-        userId,
-        date: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)),
-          lt: new Date(new Date().setHours(0, 0, 0, 0) + 2 * 86400000),
-        },
-      },
-      orderBy: { date: "asc" },
-    }),
-  ]);
+  const session = await auth();
+  const vorname = (session?.user?.name ?? "").split(" ")[0] || "Willkommen";
 
   const heute = new Date();
   heute.setHours(0, 0, 0, 0);
+  const in2Tagen = new Date(heute.getTime() + 2 * 86400000);
   const in7Tagen = new Date(heute.getTime() + 7 * 86400000);
+  const vor90Tagen = new Date(heute.getTime() - PFLEGE_TAGE * 86400000);
 
-  const aktive = bewerbungen.filter((b) => b.status !== "Gebucht" && b.status !== "Abgesagt");
+  const [castings, kontakte, pflegeKontakte, projekte, rollen, aufgaben, termine] =
+    await Promise.all([
+      prisma.application.findMany({
+        where: { userId },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        include: { contact: true },
+      }),
+      prisma.contact.count({ where: { userId } }),
+      prisma.contact.count({
+        where: { userId, OR: [{ lastContact: null }, { lastContact: { lt: vor90Tagen } }] },
+      }),
+      prisma.project.count({ where: { userId, status: "Laufend" } }),
+      prisma.role.count({ where: { userId, status: "In Arbeit" } }),
+      prisma.task.findMany({
+        where: { userId, done: false },
+        orderBy: { dueDate: { sort: "asc", nulls: "last" } },
+      }),
+      prisma.event.findMany({
+        where: { userId, date: { gte: heute, lt: in2Tagen } },
+        orderBy: { date: "asc" },
+      }),
+    ]);
 
-  const faelligeFollowUps = aktive.filter(
-    (b) => b.followUpAt && new Date(b.followUpAt) <= heute
-  );
-  const naheDeadlines = aktive.filter(
-    (b) => b.deadline && new Date(b.deadline) >= heute && new Date(b.deadline) <= in7Tagen
-  );
+  const aktive = castings.filter((c) => c.status !== "Gebucht" && c.status !== "Abgesagt");
+  const neuDieseWoche = aktive.filter(
+    (c) => c.createdAt >= new Date(heute.getTime() - 7 * 86400000)
+  ).length;
 
-  const faelligeAufgaben = aufgaben.filter(
-    (a) => a.dueDate && new Date(a.dueDate) <= heute
-  );
+  // ── Recall-Quote ─────────────────────────────────────────────
+  const bisRecall = castings.filter((c) => AB_RECALL.includes(c.status)).length;
+  const quote = castings.length > 0 ? Math.round((bisRecall / castings.length) * 100) : 0;
 
-  const vor90Tagen = new Date(heute.getTime() - 90 * 86400000);
-  const pflegeFaellig = pflegeKontakte.filter(
-    (k) => !k.lastContact || new Date(k.lastContact) < vor90Tagen
-  );
+  // ── Pipeline ─────────────────────────────────────────────────
+  const stufen = PIPELINE.map((label) => ({
+    label,
+    anzahl: castings.filter((c) => c.status === label).length,
+  }));
 
-  const letzte = bewerbungen.slice(0, 5);
+  // ── Heute wichtig ────────────────────────────────────────────
+  const eintraege: Eintrag[] = [];
+
+  for (const t of termine) {
+    const d = new Date(t.date);
+    const istHeute = d.toDateString() === new Date().toDateString();
+    const mitZeit = d.getHours() !== 0 || d.getMinutes() !== 0;
+    eintraege.push({
+      id: `e-${t.id}`,
+      titel: t.title,
+      unterzeile: [t.type, t.location].filter(Boolean).join(" · "),
+      marke: mitZeit ? uhr(d) : istHeute ? "Heute" : "Morgen",
+      href: "/kalender",
+      art: "termin",
+    });
+  }
+
+  for (const c of aktive) {
+    if (c.deadline && new Date(c.deadline) >= heute && new Date(c.deadline) <= in7Tagen) {
+      eintraege.push({
+        id: `d-${c.id}`,
+        titel: `Deadline: ${c.role}`,
+        unterzeile: `${c.production} · ${c.status}`,
+        marke: tag(c.deadline),
+        href: "/bewerbungen",
+        dringend: true,
+        art: "deadline",
+      });
+    }
+    if (c.followUpAt && new Date(c.followUpAt) <= heute) {
+      eintraege.push({
+        id: `f-${c.id}`,
+        titel: `Follow-up: ${c.role}`,
+        unterzeile: c.contact ? `${c.contact.name} · ${c.production}` : c.production,
+        marke: "fällig",
+        href: "/bewerbungen",
+        dringend: true,
+        art: "followup",
+      });
+    }
+  }
+
+  for (const a of aufgaben) {
+    if (a.dueDate && new Date(a.dueDate) <= heute) {
+      eintraege.push({
+        id: `t-${a.id}`,
+        titel: a.title,
+        unterzeile: a.priority === "Hoch" ? "Aufgabe · Priorität hoch" : "Aufgabe",
+        marke: new Date(a.dueDate) < heute ? "überfällig" : "heute",
+        href: "/aufgaben",
+        dringend: new Date(a.dueDate) < heute,
+        art: "aufgabe",
+      });
+    }
+  }
+
+  const wichtig = eintraege.slice(0, 5);
+
+  // ── Aufmacher-Text (regelbasiert, kein KI-Aufruf) ────────────
+  let kernsatz: string;
+  const ersterTermin = termine[0];
+  const naechsteDeadline = aktive
+    .filter((c) => c.deadline && new Date(c.deadline) >= heute)
+    .sort((a, b) => +new Date(a.deadline!) - +new Date(b.deadline!))[0];
+  const offeneFollowUps = aktive.filter(
+    (c) => c.followUpAt && new Date(c.followUpAt) <= heute
+  ).length;
+
+  if (ersterTermin) {
+    const d = new Date(ersterTermin.date);
+    const wann = d.toDateString() === new Date().toDateString() ? "Heute" : "Morgen";
+    const zeit = d.getHours() !== 0 || d.getMinutes() !== 0 ? ` um ${uhr(d)}` : "";
+    kernsatz = `${wann}${zeit}: ${ersterTermin.title}. Plan dir vorher genug Zeit zur Vorbereitung ein.`;
+  } else if (naechsteDeadline) {
+    kernsatz = `Deine nächste Deadline ist am ${tag(naechsteDeadline.deadline!)} für „${naechsteDeadline.role}“ in ${naechsteDeadline.production}.`;
+  } else if (offeneFollowUps > 0) {
+    kernsatz = `${offeneFollowUps} ${offeneFollowUps === 1 ? "Casting wartet" : "Castings warten"} auf ein Follow-up. Eine kurze Nachricht hält die Beziehung am Leben.`;
+  } else if (aktive.length > 0) {
+    kernsatz = `${aktive.length} ${aktive.length === 1 ? "Casting läuft" : "Castings laufen"} gerade. Nichts ist überfällig — guter Moment für Rollenarbeit.`;
+  } else {
+    kernsatz = "Noch keine laufenden Castings. Trag deine erste Bewerbung ein, dann füllt sich das Dashboard.";
+  }
+
+  const teile: string[] = [];
+  if (pflegeKontakte > 0)
+    teile.push(`${pflegeKontakte} Kontakte hattest du seit über drei Monaten nicht`);
+  if (rollen > 0) teile.push(`${rollen} ${rollen === 1 ? "Rolle ist" : "Rollen sind"} in Arbeit`);
+  if (projekte > 0) teile.push(`${projekte} ${projekte === 1 ? "Projekt läuft" : "Projekte laufen"}`);
+  const zusatz = teile.length > 0 ? teile.join(", ") + "." : "";
+
+  // ── Kennzahlen ───────────────────────────────────────────────
+  const kennzahlen: Kennzahl[] = [
+    {
+      wert: String(aktive.length),
+      label: "Aktive Castings",
+      zusatz:
+        neuDieseWoche > 0 && neuDieseWoche < aktive.length
+          ? `+${neuDieseWoche} diese Woche`
+          : undefined,
+      href: "/bewerbungen",
+      ton: "sky",
+      icon: "castings",
+    },
+    {
+      wert: `${quote}%`,
+      label: "Recall-Quote",
+      zusatz: castings.length > 0 ? `${bisRecall} von ${castings.length}` : undefined,
+      href: "/bewerbungen",
+      ton: "mint",
+      icon: "recall",
+    },
+    {
+      wert: String(kontakte),
+      label: "Kontakte",
+      zusatz: pflegeKontakte > 0 ? `${pflegeKontakte} fällig` : undefined,
+      href: "/kontakte",
+      ton: "peach",
+      icon: "kontakte",
+    },
+    {
+      wert: String(rollen),
+      label: "Rollen in Arbeit",
+      href: "/rollen",
+      ton: "butter",
+      icon: "rollen",
+    },
+  ];
+
+  const letzte: CastingZeile[] = castings.slice(0, 4).map((c) => ({
+    id: c.id,
+    rolle: c.role,
+    produktion: c.production,
+    initialen: initialen(c.role),
+    status: c.status,
+  }));
 
   return (
-    <div>
-      <div className="mb-10">
-        <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground mb-2">
-          Dashboard
-        </p>
-        <h1 className="text-3xl font-light tracking-tight text-foreground mb-1">
-          Willkommen zurück.
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          {aktive.length} aktive Castings · {projekte.length} laufende Projekte
-        </p>
+    <>
+      <DashboardHeader vorname={vorname} />
+      <Tagesueberblick kernsatz={kernsatz} zusatz={zusatz} />
+      <StatCards kennzahlen={kennzahlen} />
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <CastingPipeline stufen={stufen} gesamt={castings.length} />
+        </div>
+        <div className="lg:col-span-1">
+          <RecallRing prozent={quote} erreicht={bisRecall} gesamt={castings.length} />
+        </div>
       </div>
 
-      {/* Heute wichtig */}
-      {(faelligeFollowUps.length > 0 || naheDeadlines.length > 0 || faelligeAufgaben.length > 0 || termine.length > 0) && (
-        <div className="mb-10">
-          <h2 className="text-sm font-semibold text-foreground tracking-tight mb-4">
-            Heute wichtig
-          </h2>
-          <div className="space-y-2">
-            {termine.map((t) => {
-              const d = new Date(t.date);
-              const istHeute = d.toDateString() === new Date().toDateString();
-              const hatUhrzeit = d.getHours() !== 0 || d.getMinutes() !== 0;
-              return (
-                <Link key={`e-${t.id}`} href="/kalender" className="block">
-                  <div className="bg-violet-50 border border-violet-200 rounded-xl px-5 py-3.5 flex items-center justify-between hover:border-violet-300 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <span className="text-base">▤</span>
-                      <div>
-                        <p className="text-sm font-medium text-violet-900">
-                          {istHeute ? "Heute" : "Morgen"}
-                          {hatUhrzeit ? ` ${d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}` : ""}: {t.title}
-                        </p>
-                        <p className="text-xs text-violet-700/70">
-                          {t.type}
-                          {t.location ? ` · ${t.location}` : ""}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-xs text-violet-400">→</span>
-                  </div>
-                </Link>
-              );
-            })}
-            {naheDeadlines.map((b) => (
-              <Link key={`d-${b.id}`} href="/bewerbungen" className="block">
-                <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-3.5 flex items-center justify-between hover:border-red-300 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <span className="text-base">⏱</span>
-                    <div>
-                      <p className="text-sm font-medium text-red-900">
-                        Deadline {formatDate(b.deadline!)}: {b.role}
-                      </p>
-                      <p className="text-xs text-red-700/70">{b.production} · Status: {b.status}</p>
-                    </div>
-                  </div>
-                  <span className="text-xs text-red-400">→</span>
-                </div>
-              </Link>
-            ))}
-            {faelligeAufgaben.map((a) => (
-              <Link key={`t-${a.id}`} href="/aufgaben" className="block">
-                <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-3.5 flex items-center justify-between hover:border-amber-300 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <span className="text-base">☑</span>
-                    <div>
-                      <p className="text-sm font-medium text-amber-900">
-                        Aufgabe fällig: {a.title}
-                      </p>
-                      <p className="text-xs text-amber-700/70">
-                        Fällig am {formatDate(a.dueDate!)}
-                        {a.priority === "Hoch" ? " · Priorität hoch" : ""}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-xs text-amber-400">→</span>
-                </div>
-              </Link>
-            ))}
-            {faelligeFollowUps.map((b) => (
-              <Link key={`f-${b.id}`} href="/bewerbungen" className="block">
-                <div className="bg-orange-50 border border-orange-200 rounded-xl px-5 py-3.5 flex items-center justify-between hover:border-orange-300 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <span className="text-base">↩</span>
-                    <div>
-                      <p className="text-sm font-medium text-orange-900">
-                        Follow-up fällig: {b.role} — {b.production}
-                      </p>
-                      <p className="text-xs text-orange-700/70">
-                        {b.contact ? `Kontakt: ${b.contact.name}` : `Geplant für ${formatDate(b.followUpAt!)}`}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-xs text-orange-400">→</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Kontaktpflege */}
-      {pflegeFaellig.length > 0 && (
-        <div className="mb-10">
-          <h2 className="text-sm font-semibold text-foreground tracking-tight mb-4">
-            Kontaktpflege
-          </h2>
-          <div className="space-y-2">
-            {pflegeFaellig.map((k) => {
-              const tage = k.lastContact
-                ? Math.floor((Date.now() - new Date(k.lastContact).getTime()) / 86400000)
-                : null;
-              return (
-                <Link key={k.id} href="/kontakte" className="block">
-                  <div className="bg-card border border-border rounded-xl px-5 py-3.5 flex items-center justify-between hover:border-primary/40 transition-colors">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{k.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {k.category}
-                        {k.company ? ` · ${k.company}` : ""}
-                      </p>
-                    </div>
-                    <span className="text-xs text-orange-600 font-medium">
-                      {tage === null ? "Noch nie kontaktiert" : `Vor ${tage} Tagen`}
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-        {[
-          { href: "/bewerbungen", label: "Aktive Castings", value: aktive.length },
-          { href: "/kontakte", label: "Kontakte", value: kontakteCount },
-          { href: "/projekte", label: "Laufende Projekte", value: projekte.length },
-        ].map((stat) => (
-          <Link key={stat.href} href={stat.href}>
-            <div className="bg-card border border-border rounded-2xl p-6 hover:border-primary/40 hover:shadow-sm transition-all duration-200 cursor-pointer group">
-              <p className="text-xs font-medium tracking-wide uppercase text-muted-foreground mb-4">
-                {stat.label}
-              </p>
-              <p className="text-5xl font-light text-foreground tracking-tight mb-1">
-                {stat.value}
-              </p>
-              <p className="text-xs text-muted-foreground group-hover:text-primary transition-colors">
-                Alle ansehen →
-              </p>
-            </div>
-          </Link>
-        ))}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <HeuteWichtig eintraege={wichtig} />
+        <RecentCastings castings={letzte} />
       </div>
-
-      {/* Letzte Castings */}
-      <div>
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-sm font-semibold text-foreground tracking-tight">Letzte Castings</h2>
-          <Link href="/bewerbungen" className="text-xs text-muted-foreground hover:text-primary transition-colors">
-            Alle ansehen →
-          </Link>
-        </div>
-
-        {letzte.length === 0 ? (
-          <div className="bg-card border border-border rounded-2xl p-10 text-center">
-            <p className="text-muted-foreground text-sm">Noch keine Castings.</p>
-            <Link href="/bewerbungen" className="text-xs text-primary mt-2 inline-block hover:underline">
-              Erstes Casting eintragen →
-            </Link>
-          </div>
-        ) : (
-          <div className="bg-card border border-border rounded-2xl overflow-hidden">
-            {letzte.map((b, i) => {
-              const f = STATUS_FARBEN[b.status] ?? { bg: "bg-muted", text: "text-muted-foreground", dot: "bg-muted-foreground/40" };
-              return (
-                <div
-                  key={b.id}
-                  className={`flex items-center justify-between px-6 py-4 ${i !== letzte.length - 1 ? "border-b border-border" : ""}`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${f.dot}`} />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{b.role}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{b.production}</p>
-                    </div>
-                  </div>
-                  <span className={`text-xs font-medium px-3 py-1 rounded-full ${f.bg} ${f.text}`}>
-                    {b.status}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
+    </>
   );
 }

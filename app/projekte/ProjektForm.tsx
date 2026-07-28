@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  FELD,
+  KARTE,
+  KNOPF_PRIMAER,
+  LABEL,
+} from "@/components/stil";
+import { Plus } from "lucide-react";
 
 const STATUS_OPTIONEN = ["Laufend", "Geplant", "Abgeschlossen"];
 
@@ -36,47 +43,48 @@ export default function ProjektForm() {
     <div>
       <button
         onClick={() => setOpen(!open)}
-        className="bg-neutral-900 text-white px-4 py-2 rounded hover:bg-neutral-700 transition"
+        className={KNOPF_PRIMAER}
       >
-        + Neues Projekt
+        <Plus className="h-4 w-4" />
+        Neues Projekt
       </button>
 
       {open && (
-        <form onSubmit={handleSubmit} className="mt-4 bg-white border border-neutral-200 rounded-lg p-6 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className={`${KARTE} mt-4 flex flex-col gap-5`}>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium mb-1">Titel *</label>
-              <input name="title" required className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Titel *</label>
+              <input name="title" required className={FELD} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Meine Rolle</label>
-              <input name="role" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Meine Rolle</label>
+              <input name="role" className={FELD} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Status</label>
-              <select name="status" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm">
+              <label className={LABEL}>Status</label>
+              <select name="status" className={FELD}>
                 {STATUS_OPTIONEN.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Startdatum</label>
-              <input name="startDate" type="date" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Startdatum</label>
+              <input name="startDate" type="date" className={FELD} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Enddatum</label>
-              <input name="endDate" type="date" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Enddatum</label>
+              <input name="endDate" type="date" className={FELD} />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium mb-1">Notizen</label>
-              <textarea name="notes" rows={3} className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Notizen</label>
+              <textarea name="notes" rows={3} className={FELD} />
             </div>
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="bg-neutral-900 text-white px-4 py-2 rounded hover:bg-neutral-700 transition disabled:opacity-50"
+            className={KNOPF_PRIMAER}
           >
-            {loading ? "Speichern..." : "Speichern"}
+            {loading ? "Speichern…" : "Speichern"}
           </button>
         </form>
       )}

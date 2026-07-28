@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { FELD, KARTE, KNOPF_KLEIN, KNOPF_PRIMAER } from "@/components/stil";
+import { SeitenKopf } from "@/components/seiten-kopf";
 
 const SCHNELLAKTIONEN = [
   { label: "Follow-up Erinnerungen", prompt: "Welche meiner Bewerbungen brauchen bald ein Follow-up? Analysiere die Daten und gib mir konkrete Empfehlungen." },
@@ -32,54 +34,57 @@ export default function AssistentPage() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-2">KI-Assistent</h1>
-      <p className="text-neutral-500 mb-6">Frag mich alles über deine Bewerbungen, Kontakte und Karriere.</p>
+    <>
+      <SeitenKopf
+        eyebrow="Werkzeuge"
+        titel="KI-Assistent"
+        beschreibung="Frag mich alles über deine Castings, Kontakte und Karriere — ich kenne deine Daten."
+      />
 
-      <div className="flex gap-2 mb-6 flex-wrap">
+      <div className="flex flex-wrap gap-2">
         {SCHNELLAKTIONEN.map((a) => (
           <button
             key={a.label}
             onClick={() => handleSend(a.prompt)}
-            className="text-sm bg-white border border-neutral-200 px-4 py-2 rounded-full hover:border-neutral-400 transition"
+            className={KNOPF_KLEIN}
           >
             {a.label}
           </button>
         ))}
       </div>
 
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2">
         <input
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          placeholder="Schreib eine Frage oder Aufgabe..."
-          className="flex-1 border border-neutral-300 rounded px-4 py-2 text-sm"
+          placeholder="Schreib eine Frage oder Aufgabe…"
+          className={`${FELD} flex-1`}
         />
         <button
           onClick={() => handleSend()}
           disabled={loading}
-          className="bg-neutral-900 text-white px-4 py-2 rounded hover:bg-neutral-700 transition disabled:opacity-50"
+          className={KNOPF_PRIMAER}
         >
-          {loading ? "..." : "Senden"}
+          {loading ? "…" : "Senden"}
         </button>
       </div>
 
       {loading && (
-        <div className="bg-white border border-neutral-200 rounded-lg p-6">
+        <div className={KARTE}>
           <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-            <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-            <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+            <div className="w-2 h-2 bg-muted-foreground/45 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+            <div className="w-2 h-2 bg-muted-foreground/45 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+            <div className="w-2 h-2 bg-muted-foreground/45 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
           </div>
         </div>
       )}
 
       {antwort && !loading && (
-        <div className="bg-white border border-neutral-200 rounded-lg p-6">
+        <div className={KARTE}>
           <p className="text-sm whitespace-pre-wrap leading-relaxed">{antwort}</p>
         </div>
       )}
-    </div>
+    </>
   );
 }

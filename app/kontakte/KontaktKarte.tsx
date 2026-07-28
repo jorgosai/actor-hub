@@ -2,17 +2,22 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Check, Pencil, X } from "lucide-react";
+import {
+  CHIP_KLEIN,
+  FELD,
+  ICON_KNOPF,
+  ICON_KNOPF_LOESCHEN,
+  KARTE,
+  KATEGORIE_CHIP,
+  KNOPF_KLEIN,
+  KNOPF_PRIMAER,
+  KNOPF_SEKUNDAER,
+  LABEL,
+  chipTon,
+} from "@/components/stil";
 
 const KATEGORIEN = ["Agent", "Casting", "Regisseur", "Produzent", "Kollege", "Sonstiges"];
-
-const KATEGORIE_FARBEN: Record<string, string> = {
-  Agent: "bg-blue-100 text-blue-800",
-  Casting: "bg-purple-100 text-purple-800",
-  Regisseur: "bg-yellow-100 text-yellow-800",
-  Produzent: "bg-orange-100 text-orange-800",
-  Kollege: "bg-green-100 text-green-800",
-  Sonstiges: "bg-neutral-100 text-neutral-800",
-};
 
 type Props = {
   id: string;
@@ -75,44 +80,44 @@ export default function KontaktKarte({ id, name, category, company, email, phone
 
   if (editing) {
     return (
-      <div className="bg-white rounded-lg p-4 shadow-sm border border-neutral-300">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+      <div className={KARTE}>
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-medium mb-1">Name</label>
-            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+            <label className={LABEL}>Name</label>
+            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={FELD} />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Kategorie</label>
-            <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm">
+            <label className={LABEL}>Kategorie</label>
+            <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={FELD}>
               {KATEGORIEN.map((k) => <option key={k} value={k}>{k}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">E-Mail</label>
-            <input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+            <label className={LABEL}>E-Mail</label>
+            <input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={FELD} />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Telefon</label>
-            <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+            <label className={LABEL}>Telefon</label>
+            <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={FELD} />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Agentur / Firma</label>
-            <input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+            <label className={LABEL}>Agentur / Firma</label>
+            <input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className={FELD} />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Letzter Kontakt</label>
-            <input type="date" value={form.lastContact} onChange={(e) => setForm({ ...form, lastContact: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+            <label className={LABEL}>Letzter Kontakt</label>
+            <input type="date" value={form.lastContact} onChange={(e) => setForm({ ...form, lastContact: e.target.value })} className={FELD} />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-xs font-medium mb-1">Notizen</label>
-            <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+            <label className={LABEL}>Notizen</label>
+            <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className={FELD} />
           </div>
         </div>
         <div className="flex gap-2">
-          <button onClick={handleSave} disabled={loading} className="bg-neutral-900 text-white px-3 py-1.5 rounded text-sm hover:bg-neutral-700 transition disabled:opacity-50">
-            {loading ? "Speichern..." : "Speichern"}
+          <button onClick={handleSave} disabled={loading} className={KNOPF_PRIMAER}>
+            {loading ? "Speichern…" : "Speichern"}
           </button>
-          <button onClick={() => setEditing(false)} className="px-3 py-1.5 rounded text-sm border border-neutral-300 hover:bg-neutral-50 transition">
+          <button onClick={() => setEditing(false)} className={KNOPF_SEKUNDAER}>
             Abbrechen
           </button>
         </div>
@@ -121,43 +126,47 @@ export default function KontaktKarte({ id, name, category, company, email, phone
   }
 
   return (
-    <div className={`bg-white rounded-lg p-4 shadow-sm border ${lange ? "border-orange-200" : "border-neutral-200"}`}>
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="font-semibold">{name}</h2>
-          {company && <p className="text-sm text-neutral-500">{company}</p>}
+    <div className={`${KARTE} ${lange ? "ring-1 ring-destructive/20" : ""}`}>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h2 className="font-display text-lg font-semibold tracking-tight text-card-foreground">
+            {name}
+          </h2>
+          {company && <p className="text-sm text-muted-foreground">{company}</p>}
         </div>
-        <div className="flex items-center gap-2">
-          <span className={`text-xs px-3 py-1 rounded-full font-medium ${KATEGORIE_FARBEN[category] ?? "bg-neutral-100"}`}>
-            {category}
-          </span>
-          <button onClick={() => setEditing(true)} className="text-neutral-400 hover:text-neutral-700 transition text-sm" title="Bearbeiten">✎</button>
-          <button onClick={handleDelete} className="text-neutral-300 hover:text-red-500 transition text-lg leading-none" title="Löschen">×</button>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <span className={`${CHIP_KLEIN} ${chipTon(KATEGORIE_CHIP, category)}`}>{category}</span>
+          <button onClick={() => setEditing(true)} className={ICON_KNOPF} title="Bearbeiten">
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+          <button onClick={handleDelete} className={ICON_KNOPF_LOESCHEN} title="Löschen">
+            <X className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
-      <div className="mt-2 flex gap-4 text-sm text-neutral-500">
-        {email && <span>{email}</span>}
-        {phone && <span>{phone}</span>}
-      </div>
+      {(email || phone) && (
+        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+          {email && <span>{email}</span>}
+          {phone && <span>{phone}</span>}
+        </div>
+      )}
 
-      <div className="mt-3 flex items-center gap-3">
-        <span className={`text-xs ${lange ? "text-orange-600 font-medium" : "text-neutral-400"}`}>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <span className={`text-xs ${lange ? "font-semibold text-destructive" : "text-muted-foreground"}`}>
           {tage === null
             ? "Noch nie kontaktiert"
             : tage === 0
             ? "Heute kontaktiert"
             : `Letzter Kontakt vor ${tage} ${tage === 1 ? "Tag" : "Tagen"}`}
         </span>
-        <button
-          onClick={handleTouch}
-          className="text-xs border border-neutral-300 rounded-full px-3 py-0.5 text-neutral-600 hover:bg-neutral-100 transition"
-        >
-          Heute kontaktiert ✓
+        <button onClick={handleTouch} className={KNOPF_KLEIN}>
+          <Check className="h-3 w-3" />
+          Heute kontaktiert
         </button>
       </div>
 
-      {notes && <p className="text-sm text-neutral-600 mt-2">{notes}</p>}
+      {notes && <p className="mt-3 text-sm text-muted-foreground">{notes}</p>}
     </div>
   );
 }

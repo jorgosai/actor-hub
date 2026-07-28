@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { FELD, KARTE, LABEL } from "@/components/stil";
 
 export default function ResetForm({ token }: { token: string }) {
   const router = useRouter();
@@ -38,50 +39,50 @@ export default function ResetForm({ token }: { token: string }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-50 px-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-secondary px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <p className="text-[10px] font-semibold tracking-widest uppercase text-neutral-400 mb-1">
+          <p className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground/80 mb-1">
             Actor Hub
           </p>
-          <h1 className="text-2xl font-light tracking-tight">Neues Passwort</h1>
+          <h1 className="font-serif text-[calc(2.25rem*var(--serif-skala))] leading-[1.15] text-foreground">Neues Passwort</h1>
         </div>
 
         {fertig ? (
-          <div className="bg-white border border-neutral-200 rounded-2xl p-6 text-center shadow-sm">
+          <div className={`${KARTE} text-center`}>
             <p className="text-sm mb-4">Dein Passwort wurde geändert.</p>
             <button
               onClick={() => router.push("/login")}
-              className="w-full bg-neutral-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-neutral-700 transition"
+              className="w-full rounded-full bg-brand py-3 text-sm font-semibold text-brand-foreground transition-colors hover:bg-brand/90"
             >
               Zum Login
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="bg-white border border-neutral-200 rounded-2xl p-6 space-y-4 shadow-sm">
+          <form onSubmit={handleSubmit} className={`${KARTE} flex flex-col gap-4`}>
             <div>
-              <label className="block text-sm font-medium mb-1">Neues Passwort</label>
-              <input name="password" type="password" required minLength={8} className="w-full border border-neutral-300 rounded-lg px-3 py-2 text-sm" />
-              <p className="text-xs text-neutral-400 mt-1">Mindestens 8 Zeichen</p>
+              <label className={LABEL}>Neues Passwort</label>
+              <input name="password" type="password" required minLength={8} className={FELD} />
+              <p className="text-xs text-muted-foreground/80 mt-1">Mindestens 8 Zeichen</p>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Passwort wiederholen</label>
-              <input name="password2" type="password" required minLength={8} className="w-full border border-neutral-300 rounded-lg px-3 py-2 text-sm" />
+              <label className={LABEL}>Passwort wiederholen</label>
+              <input name="password2" type="password" required minLength={8} className={FELD} />
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-destructive">{error}</p>}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-neutral-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-neutral-700 transition disabled:opacity-50"
+              className="w-full rounded-full bg-brand py-3 text-sm font-semibold text-brand-foreground transition-colors hover:bg-brand/90 disabled:pointer-events-none disabled:opacity-50"
             >
-              {loading ? "Speichern..." : "Passwort ändern"}
+              {loading ? "Speichern…" : "Passwort ändern"}
             </button>
           </form>
         )}
 
-        <p className="text-center text-sm text-neutral-500 mt-6">
+        <p className="text-center text-sm text-muted-foreground mt-6">
           <Link href="/login" className="hover:underline">Zurück zum Login</Link>
         </p>
       </div>

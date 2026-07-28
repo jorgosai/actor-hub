@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db";
 import { getUserId } from "@/lib/session";
 import TerminForm from "./TerminForm";
 import TerminItem from "./TerminItem";
+import { SeitenKopf } from "@/components/seiten-kopf";
+import { KARTE, ZEILEN } from "@/components/stil";
 
 export default async function KalenderPage() {
   const userId = await getUserId();
@@ -22,11 +24,11 @@ export default async function KalenderPage() {
     }),
     prisma.application.findMany({
       where: { userId, status: { notIn: ["Gebucht", "Abgesagt"] } },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     }),
     prisma.project.findMany({
       where: { userId, status: { not: "Abgeschlossen" } },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     }),
   ]);
 
@@ -56,27 +58,32 @@ export default async function KalenderPage() {
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Kalender</h1>
-        <p className="text-sm text-neutral-500">{termine.length} anstehende Termine</p>
-      </div>
+    <>
+      <SeitenKopf
+        eyebrow="Übersicht"
+        titel="Kalender"
+        beschreibung={
+          termine.length > 0
+            ? `${termine.length} ${termine.length === 1 ? "anstehender Termin" : "anstehende Termine"} — Castings, Drehs, Proben.`
+            : "Keine anstehenden Termine. Trag deinen nächsten ein."
+        }
+      />
 
       <TerminForm
         castings={castings.map((c) => ({ id: c.id, label: `${c.role} — ${c.production}` }))}
         projekte={projekte.map((p) => ({ id: p.id, label: p.title }))}
       />
 
-      <div className="mt-8 space-y-8">
+      <div className="space-y-8">
         {termine.length === 0 ? (
-          <p className="text-neutral-500">Keine anstehenden Termine.</p>
+          <p className="text-sm text-muted-foreground">Keine anstehenden Termine.</p>
         ) : (
           [...gruppen.entries()].map(([key, liste]) => (
             <div key={key}>
-              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-3">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 {tagLabel(key)}
               </p>
-              <div className="space-y-2">
+              <div className={`${KARTE} ${ZEILEN} py-1`}>
                 {liste.map((t) => (
                   <TerminItem
                     key={t.id}
@@ -96,10 +103,10 @@ export default async function KalenderPage() {
 
         {vergangene.length > 0 && (
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-neutral-300 mb-3">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
               Vergangene Termine
             </p>
-            <div className="space-y-2 opacity-60">
+            <div className={`${KARTE} ${ZEILEN} py-1 opacity-60`}>
               {vergangene.map((t) => (
                 <TerminItem
                   key={t.id}
@@ -116,6 +123,6 @@ export default async function KalenderPage() {
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }

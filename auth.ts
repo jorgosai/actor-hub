@@ -4,6 +4,13 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  /*
+    Ohne trustHost akzeptiert NextAuth nur localhost und setzt über andere
+    Adressen kein Sitzungs-Cookie — die Anmeldung landet dann in einer
+    Endlosschleife. Nötig, um die App im WLAN auf dem Handy zu testen.
+    Auf Vercel ist der Host ohnehin bekannt, dort ändert sich nichts.
+  */
+  trustHost: true,
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
   providers: [

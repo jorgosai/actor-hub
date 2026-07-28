@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  FELD,
+  KARTE,
+  KNOPF_PRIMAER,
+  LABEL,
+} from "@/components/stil";
+import { Plus } from "lucide-react";
 
 const KATEGORIEN = ["Agent", "Casting", "Regisseur", "Produzent", "Kollege", "Sonstiges"];
 
@@ -36,47 +43,48 @@ export default function KontaktForm() {
     <div>
       <button
         onClick={() => setOpen(!open)}
-        className="bg-neutral-900 text-white px-4 py-2 rounded hover:bg-neutral-700 transition"
+        className={KNOPF_PRIMAER}
       >
-        + Neuer Kontakt
+        <Plus className="h-4 w-4" />
+        Neuer Kontakt
       </button>
 
       {open && (
-        <form onSubmit={handleSubmit} className="mt-4 bg-white border border-neutral-200 rounded-lg p-6 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className={`${KARTE} mt-4 flex flex-col gap-5`}>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium mb-1">Name *</label>
-              <input name="name" required className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Name *</label>
+              <input name="name" required className={FELD} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Kategorie *</label>
-              <select name="category" required className="w-full border border-neutral-300 rounded px-3 py-2 text-sm">
+              <label className={LABEL}>Kategorie *</label>
+              <select name="category" required className={FELD}>
                 {KATEGORIEN.map((k) => <option key={k} value={k}>{k}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">E-Mail</label>
-              <input name="email" type="email" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>E-Mail</label>
+              <input name="email" type="email" className={FELD} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Telefon</label>
-              <input name="phone" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Telefon</label>
+              <input name="phone" className={FELD} />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium mb-1">Agentur / Firma</label>
-              <input name="company" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Agentur / Firma</label>
+              <input name="company" className={FELD} />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium mb-1">Notizen</label>
-              <textarea name="notes" rows={3} className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Notizen</label>
+              <textarea name="notes" rows={3} className={FELD} />
             </div>
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="bg-neutral-900 text-white px-4 py-2 rounded hover:bg-neutral-700 transition disabled:opacity-50"
+            className={KNOPF_PRIMAER}
           >
-            {loading ? "Speichern..." : "Speichern"}
+            {loading ? "Speichern…" : "Speichern"}
           </button>
         </form>
       )}

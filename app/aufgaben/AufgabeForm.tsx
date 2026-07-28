@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  FELD,
+  KARTE,
+  KNOPF_PRIMAER,
+  LABEL,
+} from "@/components/stil";
+import { Plus } from "lucide-react";
 
 type Option = { id: string; label: string };
 
@@ -38,33 +45,34 @@ export default function AufgabeForm({ castings, projekte }: { castings: Option[]
     <div>
       <button
         onClick={() => setOpen(!open)}
-        className="bg-neutral-900 text-white px-4 py-2 rounded hover:bg-neutral-700 transition"
+        className={KNOPF_PRIMAER}
       >
-        + Neue Aufgabe
+        <Plus className="h-4 w-4" />
+        Neue Aufgabe
       </button>
 
       {open && (
-        <form onSubmit={handleSubmit} className="mt-4 bg-white border border-neutral-200 rounded-lg p-6 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className={`${KARTE} mt-4 flex flex-col gap-5`}>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium mb-1">Aufgabe *</label>
-              <input name="title" required placeholder="z.B. Self Tape für Tatort aufnehmen" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Aufgabe *</label>
+              <input name="title" required placeholder="z.B. Self Tape für Tatort aufnehmen" className={FELD} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Fällig am</label>
-              <input type="date" name="dueDate" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm" />
+              <label className={LABEL}>Fällig am</label>
+              <input type="date" name="dueDate" className={FELD} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Priorität</label>
-              <select name="priority" defaultValue="Normal" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm">
+              <label className={LABEL}>Priorität</label>
+              <select name="priority" defaultValue="Normal" className={FELD}>
                 <option value="Hoch">Hoch</option>
                 <option value="Normal">Normal</option>
                 <option value="Niedrig">Niedrig</option>
               </select>
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium mb-1">Verknüpfen mit (optional)</label>
-              <select name="verknuepfung" className="w-full border border-neutral-300 rounded px-3 py-2 text-sm">
+              <label className={LABEL}>Verknüpfen mit (optional)</label>
+              <select name="verknuepfung" className={FELD}>
                 <option value="">— Keine Verknüpfung —</option>
                 {castings.length > 0 && (
                   <optgroup label="Castings">
@@ -86,9 +94,9 @@ export default function AufgabeForm({ castings, projekte }: { castings: Option[]
           <button
             type="submit"
             disabled={loading}
-            className="bg-neutral-900 text-white px-4 py-2 rounded hover:bg-neutral-700 transition disabled:opacity-50"
+            className={KNOPF_PRIMAER}
           >
-            {loading ? "Speichern..." : "Speichern"}
+            {loading ? "Speichern…" : "Speichern"}
           </button>
         </form>
       )}

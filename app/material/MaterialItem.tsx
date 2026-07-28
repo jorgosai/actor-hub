@@ -1,6 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { ExternalLink, X } from "lucide-react";
+import {
+  CHIP_KLEIN,
+  CHIP_LEISE,
+  CHIP_MARKE,
+  ICON_KNOPF_LOESCHEN,
+  KNOPF_KLEIN,
+} from "@/components/stil";
 
 type Props = {
   id: string;
@@ -9,12 +17,11 @@ type Props = {
   version: string | null;
   current: boolean;
   notes: string | null;
-  createdAt: Date;
   alterMonate: number;
   altersWarnung: boolean;
 };
 
-export default function MaterialItem({ id, name, url, version, current, notes, createdAt, alterMonate, altersWarnung }: Props) {
+export default function MaterialItem({ id, name, url, version, current, notes, alterMonate, altersWarnung }: Props) {
   const router = useRouter();
 
   async function handleDelete() {
@@ -33,20 +40,22 @@ export default function MaterialItem({ id, name, url, version, current, notes, c
   }
 
   return (
-    <div className={`bg-white rounded-lg px-4 py-3 shadow-sm border flex items-center gap-3 ${current ? "border-neutral-200" : "border-neutral-100 opacity-60"}`}>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-neutral-900">{name}</p>
-          {version && <span className="text-xs bg-neutral-100 text-neutral-500 px-2 py-0.5 rounded">{version}</span>}
-          {current && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Aktuell</span>}
+    <div
+      className={`flex items-center gap-3 px-1 py-3.5 ${current ? "" : "opacity-65"}`}
+    >
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-sm font-medium text-foreground">{name}</p>
+          {version && <span className={`${CHIP_KLEIN} ${CHIP_LEISE}`}>{version}</span>}
+          {current && <span className={`${CHIP_KLEIN} ${CHIP_MARKE}`}>Aktuell</span>}
         </div>
-        <p className={`text-xs mt-0.5 ${altersWarnung && current ? "text-orange-600 font-medium" : "text-neutral-400"}`}>
+        <p className={`text-xs mt-0.5 ${altersWarnung && current ? "text-destructive font-medium" : "text-muted-foreground/80"}`}>
           {alterMonate === 0
             ? "Diesen Monat hinzugefügt"
             : `${alterMonate} ${alterMonate === 1 ? "Monat" : "Monate"} alt`}
           {altersWarnung && current ? " — Zeit für ein Update?" : ""}
         </p>
-        {notes && <p className="text-xs text-neutral-500 mt-1">{notes}</p>}
+        {notes && <p className="text-xs text-muted-foreground mt-1">{notes}</p>}
       </div>
 
       {url && (
@@ -54,22 +63,25 @@ export default function MaterialItem({ id, name, url, version, current, notes, c
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs border border-neutral-300 rounded-full px-3 py-1 text-neutral-600 hover:bg-neutral-100 transition whitespace-nowrap"
+          className={`${KNOPF_KLEIN} shrink-0 whitespace-nowrap`}
         >
-          Öffnen ↗
+          Öffnen
+          <ExternalLink className="h-3 w-3" />
         </a>
       )}
 
       {!current && (
         <button
           onClick={markiereAktuell}
-          className="text-xs text-neutral-400 hover:text-neutral-700 transition whitespace-nowrap"
+          className="shrink-0 whitespace-nowrap text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           Als aktuell markieren
         </button>
       )}
 
-      <button onClick={handleDelete} className="text-neutral-300 hover:text-red-500 transition text-lg leading-none" title="Löschen">×</button>
+      <button onClick={handleDelete} className={ICON_KNOPF_LOESCHEN} title="Löschen">
+        <X className="h-4 w-4" />
+      </button>
     </div>
   );
 }

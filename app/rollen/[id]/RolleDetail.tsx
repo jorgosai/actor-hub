@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { FELD, ICON_KNOPF_LOESCHEN, KARTE, KNOPF_KLEIN, KNOPF_PRIMAER, ROLLE_CHIP, chipTon } from "@/components/stil";
+import { X } from "lucide-react";
 
 const STATUS_OPTIONEN = ["In Arbeit", "Gespielt", "Archiv"];
 
@@ -85,31 +87,42 @@ export default function RolleDetail({ rolle }: { rolle: Rolle }) {
   }
 
   return (
-    <div className="mt-4">
-      <div className="flex items-start justify-between mb-8">
+    <>
+      <header className="animate-rise mb-4 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-light tracking-tight">{rolle.name}</h1>
-          {rolle.production && <p className="text-neutral-500 mt-1">{rolle.production}</p>}
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Rolle
+          </p>
+          <h1 className="mt-1.5 text-foreground font-serif text-[calc(2.25rem*var(--serif-skala))] leading-[1.1] sm:text-[calc(3rem*var(--serif-skala))]">
+            {rolle.name}
+          </h1>
+          {rolle.production && (
+            <p className="mt-2 text-sm text-muted-foreground">{rolle.production}</p>
+          )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <select
             value={rolle.status}
-            onChange={(e) => statusAendern(e.target.value)}
-            className="text-xs px-3 py-1.5 rounded-full border border-neutral-300 font-medium cursor-pointer bg-white"
+            onChange={(e) => { if (e.isTrusted && e.target.value !== rolle.status) statusAendern(e.target.value); }}
+            onWheel={(e) => e.currentTarget.blur()}
+            aria-label="Status"
+            className={`cursor-pointer appearance-none rounded-full border-0 px-3.5 py-1.5 text-xs font-semibold outline-none focus:ring-2 focus:ring-brand/25 ${chipTon(ROLLE_CHIP, rolle.status)}`}
           >
             {STATUS_OPTIONEN.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
-          <button onClick={loeschen} className="text-neutral-300 hover:text-red-500 transition text-lg" title="Löschen">×</button>
+          <button onClick={loeschen} className={ICON_KNOPF_LOESCHEN} title="Löschen">
+            <X className="h-4 w-4" />
+          </button>
         </div>
-      </div>
+      </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         {/* Charakterarbeit */}
         <div className="space-y-5">
-          <h2 className="text-sm font-semibold">Charakterarbeit</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Charakterarbeit</h2>
           {BEREICHE.map((b) => (
-            <div key={b.key} className="bg-white border border-neutral-200 rounded-xl p-4">
-              <label className="block text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-2">
+            <div key={b.key} className={KARTE}>
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                 {b.label}
               </label>
               <textarea
@@ -121,19 +134,19 @@ export default function RolleDetail({ rolle }: { rolle: Rolle }) {
                 }}
                 placeholder={b.frage}
                 rows={3}
-                className="w-full text-sm border-0 p-0 focus:ring-0 focus:outline-none resize-none placeholder:text-neutral-300"
+                className="w-full resize-none border-0 bg-transparent p-0 text-sm leading-relaxed text-card-foreground outline-none placeholder:text-muted-foreground/55 focus:ring-0"
               />
-              {speichert === b.key && <p className="text-xs text-neutral-400 mt-1">Speichern...</p>}
+              {speichert === b.key && <p className="text-xs text-muted-foreground/80 mt-1">Speichern...</p>}
             </div>
           ))}
-          <p className="text-xs text-neutral-400">Änderungen werden automatisch gespeichert.</p>
+          <p className="text-xs text-muted-foreground/80">Änderungen werden automatisch gespeichert.</p>
         </div>
 
         {/* KI Acting Coach */}
         <div className="lg:sticky lg:top-6">
-          <h2 className="text-sm font-semibold mb-5">Acting Coach</h2>
-          <div className="bg-white border border-neutral-200 rounded-xl p-4">
-            <div className="flex gap-2 mb-3 flex-wrap">
+          <h2 className="mb-5 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Acting Coach</h2>
+          <div className={KARTE}>
+            <div className="mb-4 flex flex-wrap gap-2">
               {[
                 { label: "Rolle analysieren", prompt: "Analysiere meine bisherige Charakterarbeit zu dieser Rolle. Was ist stark, wo sind Lücken, welche Fragen sollte ich mir noch stellen?" },
                 { label: "Fragen an die Figur", prompt: "Stell mir 5 tiefgehende Fragen zu meiner Figur, die mir helfen, sie besser zu verstehen." },
@@ -143,7 +156,7 @@ export default function RolleDetail({ rolle }: { rolle: Rolle }) {
                   key={a.label}
                   onClick={() => coachFragen(a.prompt)}
                   disabled={coachLaeuft}
-                  className="text-xs bg-neutral-50 border border-neutral-200 px-3 py-1.5 rounded-full hover:border-neutral-400 transition disabled:opacity-50"
+                  className={`${KNOPF_KLEIN} disabled:opacity-50`}
                 >
                   {a.label}
                 </button>
@@ -155,37 +168,37 @@ export default function RolleDetail({ rolle }: { rolle: Rolle }) {
                 value={frage}
                 onChange={(e) => setFrage(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && coachFragen()}
-                placeholder="Frag den Coach zu dieser Rolle..."
-                className="flex-1 border border-neutral-300 rounded px-3 py-2 text-sm"
+                placeholder="Frag den Coach zu dieser Rolle…"
+                className={`${FELD} flex-1`}
               />
               <button
                 onClick={() => coachFragen()}
                 disabled={coachLaeuft}
-                className="bg-neutral-900 text-white px-3 py-2 rounded text-sm hover:bg-neutral-700 transition disabled:opacity-50"
+                className={KNOPF_PRIMAER}
               >
-                {coachLaeuft ? "..." : "Fragen"}
+                {coachLaeuft ? "…" : "Fragen"}
               </button>
             </div>
 
             {coachLaeuft && (
               <div className="flex items-center gap-2 mt-4">
-                <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" />
-                <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                <div className="w-2 h-2 bg-muted-foreground/45 rounded-full animate-bounce" />
+                <div className="w-2 h-2 bg-muted-foreground/45 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <div className="w-2 h-2 bg-muted-foreground/45 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
               </div>
             )}
 
             {antwort && !coachLaeuft && (
-              <p className="text-sm whitespace-pre-wrap leading-relaxed mt-4 pt-4 border-t border-neutral-100">
+              <p className="text-sm whitespace-pre-wrap leading-relaxed mt-4 pt-4 border-t border-border">
                 {antwort}
               </p>
             )}
           </div>
-          <p className="text-xs text-neutral-400 mt-2">
+          <p className="text-xs text-muted-foreground/80 mt-2">
             Der Coach kennt deine Charakterarbeit — je mehr du links ausfüllst, desto besser seine Antworten.
           </p>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -2,11 +2,20 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Check, X } from "lucide-react";
+import {
+  CHIP_KLEIN,
+  HAKEN_AN,
+  HAKEN_AUS,
+  CHIP_LEISE,
+  CHIP_WARNUNG,
+  ICON_KNOPF_LOESCHEN,
+} from "@/components/stil";
 
-const PRIO_FARBEN: Record<string, string> = {
-  Hoch: "bg-red-100 text-red-700",
-  Normal: "bg-neutral-100 text-neutral-600",
-  Niedrig: "bg-neutral-50 text-neutral-400",
+const PRIO_CHIP: Record<string, string> = {
+  Hoch: CHIP_WARNUNG,
+  Normal: CHIP_LEISE,
+  Niedrig: CHIP_LEISE,
 };
 
 type Props = {
@@ -43,37 +52,39 @@ export default function AufgabeItem({ id, title, done, dueDate, priority, verknu
   }
 
   return (
-    <div className={`bg-white rounded-lg px-4 py-3 shadow-sm border flex items-center gap-3 ${ueberfaellig ? "border-red-200" : "border-neutral-200"}`}>
+    <div className="flex items-center gap-3 px-1 py-3.5">
       <button
         onClick={toggle}
         disabled={busy}
-        className={`w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition ${
-          done ? "bg-neutral-900 border-neutral-900 text-white" : "border-neutral-300 hover:border-neutral-500"
+        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-colors ${
+          done ? HAKEN_AN : HAKEN_AUS
         }`}
         title={done ? "Als offen markieren" : "Als erledigt markieren"}
       >
-        {done && <span className="text-xs leading-none">✓</span>}
+        {done && <Check className="h-3 w-3" strokeWidth={3} />}
       </button>
 
       <div className="flex-1 min-w-0">
-        <p className={`text-sm ${done ? "line-through text-neutral-400" : "text-neutral-900"}`}>{title}</p>
-        {verknuepfung && <p className="text-xs text-neutral-400 mt-0.5">{verknuepfung}</p>}
+        <p className={`text-sm ${done ? "line-through text-muted-foreground/80" : "text-foreground"}`}>{title}</p>
+        {verknuepfung && <p className="text-xs text-muted-foreground/80 mt-0.5">{verknuepfung}</p>}
       </div>
 
       {dueDate && (
-        <span className={`text-xs whitespace-nowrap ${ueberfaellig ? "text-red-600 font-medium" : "text-neutral-400"}`}>
+        <span className={`text-xs whitespace-nowrap ${ueberfaellig ? "text-destructive font-medium" : "text-muted-foreground/80"}`}>
           {new Date(dueDate).toLocaleDateString("de-DE", { day: "numeric", month: "short" })}
           {ueberfaellig ? " — überfällig" : ""}
         </span>
       )}
 
       {priority !== "Normal" && (
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${PRIO_FARBEN[priority]}`}>
+        <span className={`${CHIP_KLEIN} shrink-0 whitespace-nowrap ${PRIO_CHIP[priority]}`}>
           {priority}
         </span>
       )}
 
-      <button onClick={handleDelete} className="text-neutral-300 hover:text-red-500 transition text-lg leading-none" title="Löschen">×</button>
+      <button onClick={handleDelete} className={ICON_KNOPF_LOESCHEN} title="Löschen">
+        <X className="h-4 w-4" />
+      </button>
     </div>
   );
 }

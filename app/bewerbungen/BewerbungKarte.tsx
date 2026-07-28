@@ -2,18 +2,23 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Pencil, X } from "lucide-react";
+import {
+  CHIP_KLEIN,
+  CHIP_LEISE,
+  CHIP_WARNUNG,
+  FELD,
+  ICON_KNOPF,
+  ICON_KNOPF_LOESCHEN,
+  KARTE,
+  KNOPF_PRIMAER,
+  KNOPF_SEKUNDAER,
+  LABEL,
+  STATUS_CHIP,
+  chipTon,
+} from "@/components/stil";
 
 const STATUS_OPTIONEN = ["Anfrage", "Beworben", "Self Tape", "Recall", "Callback", "Gebucht", "Abgesagt"];
-
-const STATUS_FARBEN: Record<string, string> = {
-  Anfrage: "bg-neutral-100 text-neutral-700",
-  Beworben: "bg-blue-100 text-blue-800",
-  "Self Tape": "bg-amber-100 text-amber-800",
-  Recall: "bg-teal-100 text-teal-800",
-  Callback: "bg-purple-100 text-purple-800",
-  Gebucht: "bg-green-100 text-green-800",
-  Abgesagt: "bg-red-100 text-red-800",
-};
 
 type Kontakt = { id: string; name: string; category: string };
 
@@ -57,7 +62,10 @@ export default function BewerbungKarte({ id, role, production, status, notes, fo
   const followUpFaellig = aktiv && followUpAt && new Date(followUpAt) <= heute;
   const deadlineNah = aktiv && deadline && (new Date(deadline).getTime() - heute.getTime()) / 86400000 <= 3;
 
-  async function handleStatusChange(neuerStatus: string) {
+  async function handleStatusChange(neuerStatus: string, echt: boolean) {
+    /* Schutz gegen versehentliche Änderungen: nur bei echter Nutzereingabe
+       und nur, wenn sich der Wert tatsächlich unterscheidet. */
+    if (!echt || neuerStatus === status) return;
     await fetch(`/api/bewerbungen/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -86,41 +94,41 @@ export default function BewerbungKarte({ id, role, production, status, notes, fo
 
   if (editing) {
     return (
-      <div className="bg-white rounded-lg p-4 shadow-sm border border-neutral-300">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+      <div className={KARTE}>
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-medium mb-1">Rolle</label>
-            <input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+            <label className={LABEL}>Rolle</label>
+            <input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className={FELD} />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Produktion</label>
-            <input value={form.production} onChange={(e) => setForm({ ...form, production: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+            <label className={LABEL}>Produktion</label>
+            <input value={form.production} onChange={(e) => setForm({ ...form, production: e.target.value })} className={FELD} />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Deadline (z.B. Self Tape Abgabe)</label>
-            <input type="date" value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+            <label className={LABEL}>Deadline (z.B. Self Tape Abgabe)</label>
+            <input type="date" value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })} className={FELD} />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Follow-up am</label>
-            <input type="date" value={form.followUpAt} onChange={(e) => setForm({ ...form, followUpAt: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+            <label className={LABEL}>Follow-up am</label>
+            <input type="date" value={form.followUpAt} onChange={(e) => setForm({ ...form, followUpAt: e.target.value })} className={FELD} />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-xs font-medium mb-1">Kontakt</label>
-            <select value={form.contactId} onChange={(e) => setForm({ ...form, contactId: e.target.value })} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm">
+            <label className={LABEL}>Kontakt</label>
+            <select value={form.contactId} onChange={(e) => setForm({ ...form, contactId: e.target.value })} className={FELD}>
               <option value="">— Kein Kontakt —</option>
               {kontakte.map((k) => <option key={k.id} value={k.id}>{k.name} ({k.category})</option>)}
             </select>
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-xs font-medium mb-1">Notizen</label>
-            <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full border border-neutral-300 rounded px-3 py-1.5 text-sm" />
+            <label className={LABEL}>Notizen</label>
+            <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className={FELD} />
           </div>
         </div>
         <div className="flex gap-2">
-          <button onClick={handleSave} disabled={loading} className="bg-neutral-900 text-white px-3 py-1.5 rounded text-sm hover:bg-neutral-700 transition disabled:opacity-50">
-            {loading ? "Speichern..." : "Speichern"}
+          <button onClick={handleSave} disabled={loading} className={KNOPF_PRIMAER}>
+            {loading ? "Speichern…" : "Speichern"}
           </button>
-          <button onClick={() => setEditing(false)} className="px-3 py-1.5 rounded text-sm border border-neutral-300 hover:bg-neutral-50 transition">
+          <button onClick={() => setEditing(false)} className={KNOPF_SEKUNDAER}>
             Abbrechen
           </button>
         </div>
@@ -129,44 +137,54 @@ export default function BewerbungKarte({ id, role, production, status, notes, fo
   }
 
   return (
-    <div className="bg-white rounded-lg p-4 shadow-sm border border-neutral-200">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="font-semibold">{role}</h2>
-          <p className="text-sm text-neutral-500">{production}</p>
-          {contactName && <p className="text-xs text-neutral-400 mt-0.5">via {contactName}</p>}
+    <div className={KARTE}>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h2 className="font-display text-lg font-semibold tracking-tight text-card-foreground">
+            {role}
+          </h2>
+          <p className="text-sm text-muted-foreground">{production}</p>
+          {contactName && (
+            <p className="mt-0.5 text-xs text-muted-foreground/80">via {contactName}</p>
+          )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5">
           <select
             value={status}
-            onChange={(e) => handleStatusChange(e.target.value)}
-            className={`text-xs px-3 py-1 rounded-full border-0 font-medium cursor-pointer ${STATUS_FARBEN[status] ?? "bg-neutral-100"}`}
+            onChange={(e) => handleStatusChange(e.target.value, e.isTrusted)}
+            onWheel={(e) => e.currentTarget.blur()}
+            aria-label="Status"
+            className={`cursor-pointer appearance-none rounded-full border-0 px-3 py-1 text-xs font-semibold outline-none focus:ring-2 focus:ring-brand/25 ${chipTon(STATUS_CHIP, status)}`}
           >
             {STATUS_OPTIONEN.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
           </select>
-          <button onClick={() => setEditing(true)} className="text-neutral-400 hover:text-neutral-700 transition text-sm" title="Bearbeiten">✎</button>
-          <button onClick={handleDelete} className="text-neutral-300 hover:text-red-500 transition text-lg leading-none" title="Löschen">×</button>
+          <button onClick={() => setEditing(true)} className={ICON_KNOPF} title="Bearbeiten">
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+          <button onClick={handleDelete} className={ICON_KNOPF_LOESCHEN} title="Löschen">
+            <X className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
       {(deadline || followUpAt) && (
-        <div className="flex gap-2 mt-2 flex-wrap">
+        <div className="mt-3 flex flex-wrap gap-2">
           {deadline && (
-            <span className={`text-xs px-2 py-0.5 rounded font-medium ${deadlineNah ? "bg-red-100 text-red-700" : "bg-neutral-100 text-neutral-600"}`}>
-              ⏱ Deadline: {formatDate(deadline)}
+            <span className={`${CHIP_KLEIN} ${deadlineNah ? CHIP_WARNUNG : CHIP_LEISE}`}>
+              Deadline: {formatDate(deadline)}
             </span>
           )}
           {followUpAt && (
-            <span className={`text-xs px-2 py-0.5 rounded font-medium ${followUpFaellig ? "bg-orange-100 text-orange-700" : "bg-neutral-100 text-neutral-600"}`}>
-              ↩ Follow-up: {formatDate(followUpAt)}{followUpFaellig ? " — fällig!" : ""}
+            <span className={`${CHIP_KLEIN} ${followUpFaellig ? CHIP_WARNUNG : CHIP_LEISE}`}>
+              Follow-up: {formatDate(followUpAt)}{followUpFaellig ? " — fällig" : ""}
             </span>
           )}
         </div>
       )}
 
-      {notes && <p className="text-sm text-neutral-600 mt-2">{notes}</p>}
+      {notes && <p className="mt-3 text-sm text-muted-foreground">{notes}</p>}
     </div>
   );
 }

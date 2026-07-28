@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db";
 import { getUserId } from "@/lib/session";
 import MaterialForm from "./MaterialForm";
 import MaterialItem from "./MaterialItem";
+import { SeitenKopf } from "@/components/seiten-kopf";
+import { KARTE, ZEILEN } from "@/components/stil";
 
 const TYP_REIHENFOLGE = ["Showreel", "Headshot", "Vita", "Voice Demo", "Self Tape", "Presse", "Sonstiges"];
 
@@ -25,24 +27,31 @@ export default async function MaterialPage() {
     eintraege: material.filter((m) => m.type === typ),
   })).filter((g) => g.eintraege.length > 0);
 
+  const jetzt = new Date().getTime();
+
   function alterMonate(d: Date): number {
-    return Math.floor((Date.now() - new Date(d).getTime()) / (30.44 * 86400000));
+    return Math.floor((jetzt - new Date(d).getTime()) / (30.44 * 86400000));
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Material</h1>
-        <p className="text-sm text-neutral-500">{material.length} Einträge</p>
-      </div>
+    <>
+      <SeitenKopf
+        eyebrow="Arbeit"
+        titel="Material"
+        beschreibung={
+          material.length > 0
+            ? `${material.length} ${material.length === 1 ? "Eintrag" : "Einträge"} — Headshots, Vita, Showreel und alles, was du verschickst.`
+            : "Headshots, Vita, Showreel — hier liegt alles, was du verschickst, mit Datum."
+        }
+      />
 
       <MaterialForm />
 
-      <div className="mt-8 space-y-8">
+      <div className="space-y-8">
         {material.length === 0 ? (
-          <div className="text-neutral-500 text-sm space-y-1">
+          <div className="text-muted-foreground text-sm space-y-1">
             <p>Noch kein Material eingetragen.</p>
-            <p className="text-neutral-400">
+            <p className="text-muted-foreground/80">
               Hier sammelst du Links zu deinem Showreel, Headshots, Vita, Voice Demos — mit Versionen,
               damit du immer weißt was aktuell ist.
             </p>
@@ -50,10 +59,10 @@ export default async function MaterialPage() {
         ) : (
           gruppen.map((g) => (
             <div key={g.typ}>
-              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-3">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 {g.typ} ({g.eintraege.length})
               </p>
-              <div className="space-y-2">
+              <div className={`${KARTE} ${ZEILEN} py-1`}>
                 {g.eintraege.map((m) => {
                   const monate = alterMonate(m.createdAt);
                   const grenze = ALTERS_GRENZEN[m.type];
@@ -66,7 +75,6 @@ export default async function MaterialPage() {
                       version={m.version}
                       current={m.current}
                       notes={m.notes}
-                      createdAt={m.createdAt}
                       alterMonate={monate}
                       altersWarnung={grenze !== undefined && monate >= grenze}
                     />
@@ -77,6 +85,6 @@ export default async function MaterialPage() {
           ))
         )}
       </div>
-    </div>
+    </>
   );
 }

@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db";
 import { getUserId } from "@/lib/session";
 import AufgabeForm from "./AufgabeForm";
 import AufgabeItem from "./AufgabeItem";
+import { SeitenKopf } from "@/components/seiten-kopf";
+import { KARTE, ZEILEN } from "@/components/stil";
 
 export default async function AufgabenPage() {
   const userId = await getUserId();
@@ -13,11 +15,11 @@ export default async function AufgabenPage() {
     }),
     prisma.application.findMany({
       where: { userId, status: { notIn: ["Gebucht", "Abgesagt"] } },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     }),
     prisma.project.findMany({
       where: { userId, status: "Laufend" },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     }),
   ]);
 
@@ -31,22 +33,27 @@ export default async function AufgabenPage() {
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Aufgaben</h1>
-        <p className="text-sm text-neutral-500">{offene.length} offen</p>
-      </div>
+    <>
+      <SeitenKopf
+        eyebrow="Übersicht"
+        titel="Aufgaben"
+        beschreibung={
+          offene.length > 0
+            ? `${offene.length} ${offene.length === 1 ? "Aufgabe ist" : "Aufgaben sind"} offen.`
+            : "Nichts offen. Guter Moment für Rollenarbeit."
+        }
+      />
 
       <AufgabeForm
         castings={castings.map((c) => ({ id: c.id, label: `${c.role} — ${c.production}` }))}
         projekte={projekte.map((p) => ({ id: p.id, label: p.title }))}
       />
 
-      <div className="mt-8 space-y-2">
-        {offene.length === 0 ? (
-          <p className="text-neutral-500">Keine offenen Aufgaben. 🎉</p>
-        ) : (
-          offene.map((a) => (
+      {offene.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Keine offenen Aufgaben.</p>
+      ) : (
+        <div className={`${KARTE} ${ZEILEN} py-1`}>
+          {offene.map((a) => (
             <AufgabeItem
               key={a.id}
               id={a.id}
@@ -56,16 +63,16 @@ export default async function AufgabenPage() {
               priority={a.priority}
               verknuepfung={verknuepfung(a)}
             />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
       {erledigte.length > 0 && (
-        <div className="mt-10">
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-3">
+        <div>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Erledigt ({erledigte.length})
           </p>
-          <div className="space-y-2">
+          <div className={`${KARTE} ${ZEILEN} py-1 opacity-65`}>
             {erledigte.map((a) => (
               <AufgabeItem
                 key={a.id}
@@ -80,6 +87,6 @@ export default async function AufgabenPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
